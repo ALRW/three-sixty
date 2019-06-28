@@ -26,7 +26,7 @@ clasp login
 ```
 
 ```sh
-clasp create --webapp
+clasp create --type webapp
 ```
 
 Then update your appsscript.json to the following:
