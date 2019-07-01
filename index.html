@@ -1,20 +1,70 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>Three Sixty</title>
-  <base target="_top">
-  <?!= include('stylesheet'); ?>
-</head>
-<body>
-  <nav class="navbar has-shadow is-spaced">
-    <div class="navbar-brand">
-      <a class="navbar-item" href="."><h1 class="title">360°</h1></a>
-    </div>
-    <div class="navbar-end">
-      <a id="admin" class="button is-primary navbar-item">Admin</a>
-    </div>
-  </nav>
-  <?!= include('javascript'); ?>
-</body>
+  <head>
+    <meta charset="UTF-8">
+    <title>Three Sixty</title>
+    <base target="_top">
+    <?!= include('stylesheet'); ?>
+  </head>
+  <body>
+    <nav class="navbar has-shadow is-spaced">
+      <div class="navbar-brand">
+        <a class="navbar-item" href="."><h1 class="title">360°</h1></a>
+      </div>
+      <div class="navbar-end">
+        <a id="admin" class="button is-primary navbar-item">Admin</a>
+      </div>
+    </nav>
+    <section class="section">
+      <div class="columns is-centered">
+        <div class="column is-three-quarters">
+          <div class="tile is-ancestor">
+            <div class="tile is-vertical is-parent">
+              <article class="tile notification is-child is-primary">
+                <p class="title">What is 360 Feedback</p>
+                <p>
+                  <strong>360° Feedback</strong> is a process through which feedback
+                  for a person is gathered from a multitude of sources such as their
+                  subordinates, peers, managers and even customers or anyone that they
+                  interact with as well as from themselves. It aims to provide a
+                  fuller picture of the areas that a person should sustain and those
+                  where they should focus on improving.
+                </p>
+                <p>
+                  This tool is designed to provide a bare-bones system for
+                  conducting this kind of feedback for teams and managers. It is not
+                  designed for performance appraisals but simple as a tool to
+                  support individual development.
+                </p>
+              </article>
+              <article class="tile notification is-child is-primary">
+                <p class="title">Admin</p>
+                <p>
+                  To get started head over to the admin tab where you will be able
+                  to:
+                </p>
+                <div class="content">
+                  <ul>
+                    <li>Add a Team</li>
+                    <li>Add a team member to a team</li>
+                    <li>Remove a team member from a team</li>
+                    <li>Initiate a round of feedback</li>
+                    <li>Send a reminder our for an active round of feedback</li>
+                  </ul>
+                </div>
+              </article>
+              <article class="tile notification is-child is-primary">
+                <p class="title">360° Results</p>
+                <p>
+                  In order to view an individuals results simply search for their
+                  full name in the search field in the navigation bar.
+                </p>
+              </article>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+    <?!= include('javascript'); ?>
+  </body>
 </html>
