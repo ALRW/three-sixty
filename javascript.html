@@ -4,4 +4,15 @@
   crossorigin="anonymous">
 </script>
 <script>
+  $('#admin').click(function(e){
+    e.preventDefault()
+    $('#admin-page').removeClass('hidden')
+    $('#home-page').addClass('hidden')
+  })
+
+  $('#home').click(function(e){
+    e.preventDefault()
+    $('#home-page').removeClass('hidden')
+    $('#admin-page').addClass('hidden')
+  })
 </script>
