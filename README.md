@@ -50,11 +50,17 @@ finally to deploy and view your webapp
 clasp push && clasp deploy
 ```
 
+Before you can use the application you'll need to give it permission to access
+certain google resources. First, in your browser of choice, navigate to:
+[Google apps scripts](https://script.google.com) and open the `Three-sixty`
+project.
+
+Now click on `Run` > `Run function` > `any functions is fine` in the navigation
+bar. This will open a prompt and ask you to give this script the permissions it
+requires.
+
+We can now access our running app by running the following in the command line:
+
 ```sh
 clasp open --webapp
 ```
-
-
-
-
-

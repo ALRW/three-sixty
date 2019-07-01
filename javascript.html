@@ -4,8 +4,10 @@
   crossorigin="anonymous">
 </script>
 <script>
+  // Toggle pages from navbar
   $('#admin').click(function(e){
     e.preventDefault()
+    google.script.run.withSuccessHandler(renderTeams).getTeams()
     $('#admin-page').removeClass('hidden')
     $('#home-page').addClass('hidden')
   })
@@ -15,4 +17,40 @@
     $('#home-page').removeClass('hidden')
     $('#admin-page').addClass('hidden')
   })
+
+  // ADMIN - Create a new team
+  $('#add-team').click(function(e){
+    e.preventDefault()
+    $('.modal').addClass('is-active')
+  })
+
+  $('.modal-background').click(function(e){
+    e.preventDefault()
+    $('.modal').removeClass('is-active')
+  })
+
+  $('.modal-close').click(function(e){
+    e.preventDefault()
+    $('.modal').removeClass('is-active')
+  })
+
+  function renderTeams(teams) {
+    const html = '<div class="tile is-ancestor">\
+          <div class="tile is-vertical is-parent">' +
+      teams.reduce(function(result, teamName){
+        return result + '<article class="tile notification is-child is-primary">\
+              <p class="title">' + teamName + '</p></article>'
+      }, '') + '</div></div>'
+    $('.modal').removeClass('is-active')
+    $('#team-details').empty()
+    $('#team-details').append(html)
+}
+
+  $('#add-team-submit').click(function(e){
+    e.preventDefault()
+    var name = $('#add-team-name').val()
+    google.script.run.withSuccessHandler(renderTeams).addTeam(name)
+  })
+
+
 </script>
