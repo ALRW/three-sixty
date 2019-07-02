@@ -29,7 +29,7 @@ function getOrCreateTeamSheet(folder) {
 }
 
 //TODO remove duplication from these two functions as they solidify
-function getTeams() {
+function getTeams(): string[] {
   const teamSpreadSheet = getOrCreateTeamSheet(getOrCreateWorkingFolder())
   return teamSpreadSheet.getSheets()
     .filter(sheet => sheet.getName() !==  DEFAULT_SHEET_NAME)
@@ -44,10 +44,15 @@ function addTeam(teamName: string): string[] {
     .map(sheet => sheet.getName())
 }
 
-function removeTeam(teamName: string) {
+function removeTeam(teamName: string): string[] {
   const teamSpreadSheet = getOrCreateTeamSheet(getOrCreateWorkingFolder())
   teamSpreadSheet.deleteSheet(teamSpreadSheet.getSheetByName(teamName))
   return teamSpreadSheet.getSheets()
     .filter(sheet => sheet.getName() !==  DEFAULT_SHEET_NAME)
     .map(sheet => sheet.getName())
+}
+
+function addPerson({ firstName, lastName, email, team }){
+  Logger.log(firstName, lastName, email, team)
+  return getTeams()
 }
