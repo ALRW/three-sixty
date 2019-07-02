@@ -39,11 +39,19 @@
           <div class="tile is-vertical is-parent">' +
       teams.reduce(function(result, teamName){
         return result + '<article class="tile notification is-child is-primary">\
-              <p class="title">' + teamName + '</p></article>'
+              <p class="title">' + teamName + '</p>\
+        <a id="' + teamName + '"class="button">Remove Team</a></article>'
       }, '') + '</div></div>'
     $('.modal').removeClass('is-active')
     $('#team-details').empty()
     $('#team-details').append(html)
+    teams.forEach(function(teamName){
+      $('#' + teamName).click(function(e){
+        e.preventDefault()
+        google.script.run.withSuccessHandler(renderTeams).removeTeam(teamName)
+      })
+
+    })
 }
 
   $('#add-team-submit').click(function(e){

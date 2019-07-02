@@ -43,3 +43,11 @@ function addTeam(teamName: string): string[] {
     .filter(sheet => sheet.getName() !==  DEFAULT_SHEET_NAME)
     .map(sheet => sheet.getName())
 }
+
+function removeTeam(teamName: string) {
+  const teamSpreadSheet = getOrCreateTeamSheet(getOrCreateWorkingFolder())
+  teamSpreadSheet.deleteSheet(teamSpreadSheet.getSheetByName(teamName))
+  return teamSpreadSheet.getSheets()
+    .filter(sheet => sheet.getName() !==  DEFAULT_SHEET_NAME)
+    .map(sheet => sheet.getName())
+}
