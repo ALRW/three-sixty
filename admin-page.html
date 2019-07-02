@@ -22,7 +22,7 @@
         </div>
         <div class="field">
           <div class="control">
-            <button id="add-team-submit" class="button is-link">Submit</button>
+            <button id="add-team-submit" class="button is-link is-primary">Submit</button>
           </div>
         </div>
       </div>
@@ -30,3 +30,47 @@
     <button class="modal-close is-large" aria-label="close"></button>
   </div>
 </div>
+<script>
+  $('#add-team').click(function(e){
+    e.preventDefault()
+    $('.modal').addClass('is-active')
+  })
+
+  $('.modal-background').click(function(e){
+    e.preventDefault()
+    $('.modal').removeClass('is-active')
+  })
+
+  $('.modal-close').click(function(e){
+    e.preventDefault()
+    $('.modal').removeClass('is-active')
+  })
+
+  function renderTeams(teams) {
+    const html = '<div class="tile is-ancestor">\
+          <div class="tile is-vertical is-parent">' +
+      teams.reduce(function(result, teamName){
+        return result + '<article class="tile notification is-child is-primary">\
+              <p class="title">' + teamName + '</p>\
+        <a id="' + teamName + '"class="button">Remove Team</a></article>'
+      }, '') + '</div></div>'
+    $('.modal').removeClass('is-active')
+    $('#add-team-submit').removeClass('is-loading')
+    $('#team-details').empty()
+    $('#team-details').append(html)
+    teams.forEach(function(teamName){
+      $('#' + teamName).click(function(e){
+        e.preventDefault()
+        google.script.run.withSuccessHandler(renderTeams).removeTeam(teamName)
+      })
+
+    })
+  }
+
+  $('#add-team-submit').click(function(e){
+    e.preventDefault()
+    $('#add-team-submit').addClass('is-loading')
+    var name = $('#add-team-name').val()
+    google.script.run.withSuccessHandler(renderTeams).addTeam(name)
+  })
+</script>
