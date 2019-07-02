@@ -1,12 +1,14 @@
 <div id="admin-page" class="hidden">
-  <nav class="navbar has-shadow is-spaced">
-    <div class="navbar-end">
-      <a id="add-team" class="button navbar-item is-primary">Add Team</a>
-    </div>
-  </nav>
   <section class="section">
     <div class="columns is-centered">
       <div id="team-details" class="column is-three-quarters"></div>
+    </div>
+  </section>
+  <section class="section">
+    <div class="columns is-centered">
+      <div id="team-details" class="column is-half">
+        <a id="add-team" class="button navbar-item is-primary is-large">Add Team</a>
+      </div>
     </div>
   </section>
   <div class="modal">
@@ -47,19 +49,25 @@
   })
 
   function renderTeams(teams) {
-    const html = '<div class="tile is-ancestor">\
-          <div class="tile is-vertical is-parent">' +
-      teams.reduce(function(result, teamName){
-        return result + '<article class="tile notification is-child is-primary">\
-              <p class="title">' + teamName + '</p>\
-        <a id="' + teamName + '"class="button">Remove Team</a></article>'
-      }, '') + '</div></div>'
+    const html = teams.reduce(function(result, teamName){
+      return result + '\
+      <div class="card">\
+      <header class="card-header">\
+      <p class="card-header-title">' + teamName + '</p>\
+      </header>\
+      <div class="card-content"></div>\
+      <footer class="card-footer">\
+      <a class="card-footer-item">Add Team Member</a>\
+      <a class="card-footer-item">Start Feedback Round</a>\
+      <a id="' + teamName + '-delete" class="card-footer-item">Delete Team</a>\
+      </footer>\
+      </div>'}, '')
     $('.modal').removeClass('is-active')
     $('#add-team-submit').removeClass('is-loading')
     $('#team-details').empty()
     $('#team-details').append(html)
     teams.forEach(function(teamName){
-      $('#' + teamName).click(function(e){
+      $('#' + teamName + '-delete').click(function(e){
         e.preventDefault()
         google.script.run.withSuccessHandler(renderTeams).removeTeam(teamName)
       })
