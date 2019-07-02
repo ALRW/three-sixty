@@ -24,7 +24,7 @@
         </div>
         <div class="field">
           <div class="control">
-            <button id="add-team-submit" class="button is-link is-primary">Submit</button>
+            <button id="add-team-submit" class="button is-primary">Submit</button>
           </div>
         </div>
       </div>
@@ -71,7 +71,7 @@
         </div>\
         <div class="field">\
           <div class="control">\
-            <button id="' + teamName + '-add-person-submit" class="button is-link is-primary">Submit</button>\
+            <button id="' + teamName + '-add-person-submit" class="button is-primary">Submit</button>\
           </div>\
         </div>\
       </div>\
@@ -95,25 +95,44 @@
     })
   }
 
-  function renderTeams(teams) {
-    const html = teams.reduce(function(result, teamName){
+  function renderTeamCards(teams) {
+    const html = teams.reduce(function(result, { teamName, members }){
       return result + '\
       <div class="card">\
       <header class="card-header">\
-      <p class="card-header-title">' + teamName + '</p>\
+      <p class="card-header-title title is-4">' + teamName + '</p>\
       </header>\
-      <div class="card-content"></div>\
+      <div class="card-content">\
+      <table class="table is-fullwidth is-hoverable">\
+      <thead>\
+      <tr>\
+      <th>First Name</th>\
+      <th>Last Name</th>\
+      <th>Email Address</th>\
+      <th>Remove From Team</th>\
+      </tr>\
+      </thead><tbody>' +
+        members.reduce(function(result, { firstName, lastName, email }){
+          return result + '\
+          <tr><th>' + firstName +'</th><th>'+ lastName +'</th><th>'+ email +'</th>\
+          <th><a class="button is-danger">Remove '+ firstName +'</a></th></tr>'
+        }, '') + '</tbody></table></div>\
       <footer class="card-footer">\
       <a id="' + teamName + '-add" class="card-footer-item">Add Team Member</a>\
       <a id="' + teamName + '-start" class="card-footer-item">Start Feedback Round</a>\
       <a id="' + teamName + '-delete" class="card-footer-item">Delete Team</a>\
       </footer>\
       </div>'}, '')
-    $('#team-modal').removeClass('is-active')
-    $('#add-team-submit').removeClass('is-loading')
     $('#team-details').empty()
     $('#team-details').append(html)
-    teams.forEach(function(teamName){
+  }
+
+  //TODO render team members
+  function renderTeams(teams) {
+    $('#team-modal').removeClass('is-active')
+    $('#add-team-submit').removeClass('is-loading')
+    renderTeamCards(teams)
+    teams.forEach(function({teamName, members}){
       $('#'+ teamName + '-modal').removeClass('is-active')
       renderAddPersonModal(teamName)
       $('#' + teamName + '-delete').click(function(e){

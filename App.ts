@@ -29,30 +29,46 @@ function getOrCreateTeamSheet(folder) {
 }
 
 //TODO remove duplication from these two functions as they solidify
-function getTeams(): string[] {
+function matrixToViewModel(sheet) {
+  const teamName = sheet.getName()
+  const members = sheet.getDataRange().getValues().map(row => ({
+    firstName: row[0],
+    lastName: row[1],
+    email: row[2] 
+  }))
+  return {
+    teamName,
+    members
+  }
+}
+
+function getTeams(): object {
   const teamSpreadSheet = getOrCreateTeamSheet(getOrCreateWorkingFolder())
   return teamSpreadSheet.getSheets()
     .filter(sheet => sheet.getName() !==  DEFAULT_SHEET_NAME)
-    .map(sheet => sheet.getName())
+    .map(sheet => matrixToViewModel(sheet))
 }
 
-function addTeam(teamName: string): string[] {
+function addTeam(teamName: string): object {
   const teamSpreadSheet = getOrCreateTeamSheet(getOrCreateWorkingFolder())
   teamSpreadSheet.insertSheet(teamName)
   return teamSpreadSheet.getSheets()
     .filter(sheet => sheet.getName() !==  DEFAULT_SHEET_NAME)
-    .map(sheet => sheet.getName())
+    .map(sheet => matrixToViewModel(sheet))
 }
 
-function removeTeam(teamName: string): string[] {
+function removeTeam(teamName: string): object {
   const teamSpreadSheet = getOrCreateTeamSheet(getOrCreateWorkingFolder())
   teamSpreadSheet.deleteSheet(teamSpreadSheet.getSheetByName(teamName))
   return teamSpreadSheet.getSheets()
     .filter(sheet => sheet.getName() !==  DEFAULT_SHEET_NAME)
-    .map(sheet => sheet.getName())
+    .map(sheet => matrixToViewModel(sheet))
 }
 
 function addPerson({ firstName, lastName, email, team }){
   Logger.log(firstName, lastName, email, team)
+  getOrCreateTeamSheet(getOrCreateWorkingFolder())
+    .getSheetByName(team)
+    .appendRow([firstName, lastName, email])
   return getTeams()
 }
