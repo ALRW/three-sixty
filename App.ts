@@ -16,7 +16,7 @@ function getOrCreateWorkingFolder() {
   return folders.hasNext() ? folders.next() : DriveApp.createFolder(FOLDER_NAME)
 }
 
-function getOrCreateTeamSheet(folder) {
+function getOrCreateTeamSpreadsheet(folder) {
   const files = folder.getFilesByName(TEAM_SHEET_NAME)
   if (files.hasNext()) {
     return SpreadsheetApp.open(files.next())
@@ -43,32 +43,38 @@ function matrixToViewModel(sheet) {
 }
 
 function getTeams(): object {
-  const teamSpreadSheet = getOrCreateTeamSheet(getOrCreateWorkingFolder())
-  return teamSpreadSheet.getSheets()
+  return getOrCreateTeamSpreadsheet(getOrCreateWorkingFolder())
+    .getSheets()
     .filter(sheet => sheet.getName() !==  DEFAULT_SHEET_NAME)
     .map(sheet => matrixToViewModel(sheet))
 }
 
 function addTeam(teamName: string): object {
-  const teamSpreadSheet = getOrCreateTeamSheet(getOrCreateWorkingFolder())
+  const teamSpreadSheet = getOrCreateTeamSpreadsheet(getOrCreateWorkingFolder())
   teamSpreadSheet.insertSheet(teamName)
-  return teamSpreadSheet.getSheets()
-    .filter(sheet => sheet.getName() !==  DEFAULT_SHEET_NAME)
-    .map(sheet => matrixToViewModel(sheet))
+  return getTeams()
 }
 
 function removeTeam(teamName: string): object {
-  const teamSpreadSheet = getOrCreateTeamSheet(getOrCreateWorkingFolder())
+  const teamSpreadSheet = getOrCreateTeamSpreadsheet(getOrCreateWorkingFolder())
   teamSpreadSheet.deleteSheet(teamSpreadSheet.getSheetByName(teamName))
-  return teamSpreadSheet.getSheets()
-    .filter(sheet => sheet.getName() !==  DEFAULT_SHEET_NAME)
-    .map(sheet => matrixToViewModel(sheet))
+  return getTeams()
 }
 
-function addPerson({ firstName, lastName, email, team }){
+function addPerson({ firstName, lastName, email, team }): object {
   Logger.log(firstName, lastName, email, team)
-  getOrCreateTeamSheet(getOrCreateWorkingFolder())
+  getOrCreateTeamSpreadsheet(getOrCreateWorkingFolder())
     .getSheetByName(team)
     .appendRow([firstName, lastName, email])
+  return getTeams()
+}
+
+function removePerson({ firstName, lastName, teamName }): object {
+  const teamSheet = getOrCreateTeamSpreadsheet(getOrCreateWorkingFolder())
+    .getSheetByName(teamName)
+  const teamData = teamSheet.getDataRange().getValues()
+  const index = teamData.map(row => row.slice(0, 2).join(''))
+    .indexOf(`${firstName}${lastName}`)
+  teamSheet.deleteRow(index + 1)
   return getTeams()
 }

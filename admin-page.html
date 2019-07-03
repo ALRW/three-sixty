@@ -115,7 +115,8 @@
         members.reduce(function(result, { firstName, lastName, email }){
           return result + '\
           <tr><th>' + firstName +'</th><th>'+ lastName +'</th><th>'+ email +'</th>\
-          <th><a class="button is-danger">Remove '+ firstName +'</a></th></tr>'
+          <th><a id="remove-'+ firstName + lastName + '">Remove '+ firstName +'\
+            </a></th></tr>'
         }, '') + '</tbody></table></div>\
       <footer class="card-footer">\
       <a id="' + teamName + '-add" class="card-footer-item">Add Team Member</a>\
@@ -125,9 +126,17 @@
       </div>'}, '')
     $('#team-details').empty()
     $('#team-details').append(html)
+    teams.forEach(function({teamName, members}) {
+      members.forEach(function({ firstName, lastName }){
+        $('#remove-'+ firstName + lastName).click(function(e){
+          e.preventDefault()
+          google.script.run.withSuccessHandler(renderTeams)
+            .removePerson({ firstName, lastName, teamName })
+        })
+      })
+    })
   }
 
-  //TODO render team members
   function renderTeams(teams) {
     $('#team-modal').removeClass('is-active')
     $('#add-team-submit').removeClass('is-loading')
