@@ -10,7 +10,10 @@ const include = (filename: string) => HtmlService
   .createHtmlOutputFromFile(filename)
   .getContent();
 
-// ADMIN
+/*
+ADMIN
+All of the following functions are used by the admin-page
+*/
 function getOrCreateWorkingFolder() {
   const folders = DriveApp.getFoldersByName(FOLDER_NAME)
   return folders.hasNext() ? folders.next() : DriveApp.createFolder(FOLDER_NAME)
@@ -28,19 +31,14 @@ function getOrCreateTeamSpreadsheet(folder) {
   return ss
 }
 
-//TODO remove duplication from these two functions as they solidify
-function matrixToViewModel(sheet) {
-  const teamName = sheet.getName()
-  const members = sheet.getDataRange().getValues().map(row => ({
+const matrixToViewModel = (sheet) => ({
+  teamName: sheet.getName(),
+  members: sheet.getDataRange().getValues().map((row: string[]) => ({
     firstName: row[0],
     lastName: row[1],
     email: row[2] 
   }))
-  return {
-    teamName,
-    members
-  }
-}
+})
 
 function getTeams(): object {
   return getOrCreateTeamSpreadsheet(getOrCreateWorkingFolder())
@@ -78,3 +76,28 @@ function removePerson({ firstName, lastName, teamName }): object {
   teamSheet.deleteRow(index + 1)
   return getTeams()
 }
+
+/*
+FORM CREATION
+The following functions define the creation of the feedback form
+*/
+
+const createMultipleChoiceGrid = (form, question, helpText) => form.addGridItem()
+  .setTitle(question)
+  .setHelpText(helpText)
+  .setRows(['You...'])
+  .setColumns(['Have room to do more', 'Are spot on', 'Are smashing it'])
+
+function createFeedbackForm(title: string) {
+  const form = FormApp.create(title)
+  form.addSectionHeaderItem().setTitle('First a little bit about you')
+  form.addTextItem().setTitle('What\'s your first name?')
+  form.addTextItem().setTitle('What\'s your surname name?')
+  form.addPageBreakItem().setTitle('The What')
+  //TODO add first section questions
+  form.addPageBreakItem().setTitle('The How (Our Values)')
+  //TODO add section section questions
+  form.addPageBreakItem().setTitle('General Feedback')
+  //TODO add final questions
+}
+
