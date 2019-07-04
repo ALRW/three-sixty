@@ -24,14 +24,14 @@
   </div>
 </nav>
 <script>
-  $('#admin').click(function(e){
+  $('#admin').click(e => {
     e.preventDefault()
     google.script.run.withSuccessHandler(renderTeams).getTeams()
     $('#admin-page').removeClass('hidden')
     $('#home-page').addClass('hidden')
   })
 
-  $('#home').click(function(e){
+  $('#home').click(e => {
     e.preventDefault()
     $('#home-page').removeClass('hidden')
     $('#admin-page').addClass('hidden')

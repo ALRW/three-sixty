@@ -32,63 +32,63 @@
   </div>
 </div>
 <script>
-  $('#add-team').click(function(e){
+  $('#add-team').click(e => {
     e.preventDefault()
     $('#team-modal').addClass('is-active')
   })
 
-  $('#team-modal-background').click(function(e){
+  $('#team-modal-background').click(e => {
     e.preventDefault()
     $('#team-modal').removeClass('is-active')
   })
 
   function renderAddPersonModal(teamName){
-    const html = '\
-  <div id="' + teamName + '-modal" class="modal">\
-    <div id="' + teamName + '-modal-background" class="modal-background"></div>\
-    <div class="modal-content">\
-      <div class="box">\
-        <div class="field">\
-          <label class="label">First Name</label>\
-          <div class="control">\
-            <input id="' + teamName + '-add-name" class="input" type="text" placeholder="e.g. Steve">\
-          </div>\
-          <p class="help">Enter the first or given name for your team member</p>\
-        </div>\
-        <div class="field">\
-          <label class="label">Last Name</label>\
-          <div class="control">\
-            <input id="'+ teamName +'-add-surname" class="input" type="text" placeholder="e.g. Smith">\
-          </div>\
-          <p class="help">Enter the lastname/surname for your team member</p>\
-        </div>\
-        <div class="field">\
-          <label class="label">Email</label>\
-          <div class="control">\
-            <input id="' + teamName + '-add-email" class="input" type="email" placeholder="steve.smith@mysweetbiz.com">\
-          </div>\
-          <p class="help">Enter the email for your team member</p>\
-        </div>\
-        <div class="field">\
-          <div class="control">\
-            <button id="' + teamName + '-add-person-submit" class="button is-primary">Submit</button>\
-          </div>\
-        </div>\
-      </div>\
-    </div>\
-  </div>'
+    const html = `
+  <div id="${teamName}-modal" class="modal">
+    <div id="${teamName}-modal-background" class="modal-background"></div>
+    <div class="modal-content">
+      <div class="box">
+        <div class="field">
+          <label class="label">First Name</label>
+          <div class="control">
+            <input id="${teamName}-add-name" class="input" type="text" placeholder="e.g. Steve">
+          </div>
+          <p class="help">Enter the first or given name for your team member</p>
+        </div>
+        <div class="field">
+          <label class="label">Last Name</label>
+          <div class="control">
+            <input id="${teamName}-add-surname" class="input" type="text" placeholder="e.g. Smith">
+          </div>
+          <p class="help">Enter the lastname/surname for your team member</p>
+        </div>
+        <div class="field">
+          <label class="label">Email</label>
+          <div class="control">
+            <input id="${teamName}-add-email" class="input" type="email" placeholder="steve.smith@mysweetbiz.com">
+          </div>
+          <p class="help">Enter the email for your team member</p>
+        </div>
+        <div class="field">
+          <div class="control">
+            <button id="${teamName}-add-person-submit" class="button is-primary">Submit</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>`
     $('#admin-page').append(html)
-    $('#' + teamName + '-modal-background').click(function(e){
+    $(`#${teamName}-modal-background`).click(e => {
       e.preventDefault()
-      $('#'+ teamName + '-modal').removeClass('is-active')
+      $(`#${teamName}-modal`).removeClass('is-active')
     })
-    $('#' + teamName + '-add-person-submit').click(function(e){
+    $(`#${teamName}-add-person-submit`).click(e => {
       e.preventDefault()
-      $('#' + teamName + '-add-person-submit').addClass('is-loading')
+      $(`#${teamName}-add-person-submit`).addClass('is-loading')
       const data = {
-        firstName: $('#' + teamName + '-add-name').val(),
-        lastName: $('#' + teamName + '-add-surname').val(),
-        email: $('#' + teamName + '-add-email').val(),
+        firstName: $(`#${teamName}-add-name`).val(),
+        lastName: $(`#${teamName}-add-surname`).val(),
+        email: $(`#${teamName}-add-email`).val(),
         team: teamName
       }
       google.script.run.withSuccessHandler(renderTeams).addPerson(data)
@@ -96,39 +96,44 @@
   }
 
   function renderTeamCards(teams) {
-    const html = teams.reduce(function(result, { teamName, members }){
-      return result + '\
-      <div class="card">\
-      <header class="card-header">\
-      <p class="card-header-title title is-4">' + teamName + '</p>\
-      </header>\
-      <div class="card-content">\
-      <table class="table is-fullwidth is-hoverable">\
-      <thead>\
-      <tr>\
-      <th>First Name</th>\
-      <th>Last Name</th>\
-      <th>Email Address</th>\
-      <th>Remove From Team</th>\
-      </tr>\
-      </thead><tbody>' +
-        members.reduce(function(result, { firstName, lastName, email }){
-          return result + '\
-          <tr><th>' + firstName +'</th><th>'+ lastName +'</th><th>'+ email +'</th>\
-          <th><a id="remove-'+ firstName + lastName + '">Remove '+ firstName +'\
-            </a></th></tr>'
-        }, '') + '</tbody></table></div>\
-      <footer class="card-footer">\
-      <a id="' + teamName + '-add" class="card-footer-item">Add Team Member</a>\
-      <a id="' + teamName + '-start" class="card-footer-item">Start Feedback Round</a>\
-      <a id="' + teamName + '-delete" class="card-footer-item">Delete Team</a>\
-      </footer>\
-      </div>'}, '')
+    const html = teams.reduce((result, { teamName, members }) => {
+      return `${result}
+      <div class="card">
+      <header class="card-header">
+      <p class="card-header-title title is-4">${teamName}</p>
+      </header>
+      <div class="card-content">
+      <table class="table is-fullwidth is-hoverable">
+      <thead>
+      <tr>
+      <th>First Name</th>
+      <th>Last Name</th>
+      <th>Email Address</th>
+      <th>Remove From Team</th>
+      </tr>
+      </thead>
+      <tbody>
+        ${members.reduce(function(result, { firstName, lastName, email }){
+          return `${result}
+          <tr>
+          <th>${firstName}</th>
+          <th>${lastName}</th>
+          <th>${email}</th>
+          <th><a id="remove-${firstName}${lastName}">Remove ${firstName}</a></th>
+          </tr>`
+        }, '')}
+        </tbody></table></div>
+      <footer class="card-footer">
+      <a id="${teamName}-add" class="card-footer-item">Add Team Member</a>
+      <a id="${teamName}-start" class="card-footer-item">Start Feedback Round</a>
+      <a id="${teamName}-delete" class="card-footer-item">Delete Team</a>
+      </footer>
+      </div>`}, '')
     $('#team-details').empty()
     $('#team-details').append(html)
-    teams.forEach(function({teamName, members}) {
-      members.forEach(function({ firstName, lastName }){
-        $('#remove-'+ firstName + lastName).click(function(e){
+    teams.forEach(({teamName, members}) => {
+      members.forEach(({ firstName, lastName }) => {
+        $(`#remove-${firstName}${lastName}`).click(e => {
           e.preventDefault()
           google.script.run.withSuccessHandler(renderTeams)
             .removePerson({ firstName, lastName, teamName })
@@ -141,25 +146,25 @@
     $('#team-modal').removeClass('is-active')
     $('#add-team-submit').removeClass('is-loading')
     renderTeamCards(teams)
-    teams.forEach(function({teamName, members}){
-      $('#'+ teamName + '-modal').removeClass('is-active')
+    teams.forEach(({teamName, members}) => {
+      $(`#${teamName}-modal`).removeClass('is-active')
       renderAddPersonModal(teamName)
-      $('#' + teamName + '-delete').click(function(e){
+      $(`#${teamName}-delete`).click(e => {
         e.preventDefault()
         google.script.run.withSuccessHandler(renderTeams).removeTeam(teamName)
       })
-      $('#' + teamName + '-add').click(function(e){
+      $(`#${teamName}-add`).click(e => {
         e.preventDefault()
-        $('#' + teamName + '-add-person-submit').removeClass('is-loading')
-        $('#'+ teamName + '-modal').addClass('is-active')
+        $(`#${teamName}-add-person-submit`).removeClass('is-loading')
+        $(`#${teamName}-modal`).addClass('is-active')
       })
     })
   }
 
-  $('#add-team-submit').click(function(e){
+  $('#add-team-submit').click(e => {
     e.preventDefault()
     $('#add-team-submit').addClass('is-loading')
-    var name = $('#add-team-name').val()
+    const name = $('#add-team-name').val()
     google.script.run.withSuccessHandler(renderTeams).addTeam(name)
   })
 </script>
