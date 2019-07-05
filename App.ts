@@ -19,26 +19,32 @@ function getOrCreateWorkingFolder() {
   return folders.hasNext() ? folders.next() : DriveApp.createFolder(FOLDER_NAME)
 }
 
+function addFileToWorkingFolder (folder, file) {
+  const temp = DriveApp.getFileById(file.getId())
+  folder.addFile(temp)
+  DriveApp.getRootFolder().removeFile(temp)
+  return file
+}
+
 function getOrCreateTeamSpreadsheet(folder) {
   const files = folder.getFilesByName(TEAM_SHEET_NAME)
   if (files.hasNext()) {
     return SpreadsheetApp.open(files.next())
   }
   const ss = SpreadsheetApp.create(TEAM_SHEET_NAME)
-  const temp = DriveApp.getFileById(ss.getId())
-  folder.addFile(temp)
-  DriveApp.getRootFolder().removeFile(temp)
-  return ss
+  return addFileToWorkingFolder(folder, ss)
 }
 
-const matrixToViewModel = (sheet) => ({
-  teamName: sheet.getName(),
-  members: sheet.getDataRange().getValues().map((row: string[]) => ({
-    firstName: row[0],
-    lastName: row[1],
-    email: row[2] 
-  }))
-})
+function matrixToViewModel (sheet) {
+  return {
+    teamName: sheet.getName(),
+    members: sheet.getDataRange().getValues().map((row: string[]) => ({
+      firstName: row[0],
+      lastName: row[1],
+      email: row[2]
+    }))
+  }
+}
 
 function getTeams(): object {
   return getOrCreateTeamSpreadsheet(getOrCreateWorkingFolder())
@@ -60,10 +66,18 @@ function removeTeam(teamName: string): object {
 }
 
 function addPerson({ firstName, lastName, email, team }): object {
-  Logger.log(firstName, lastName, email, team)
-  getOrCreateTeamSpreadsheet(getOrCreateWorkingFolder())
+  const folder = getOrCreateWorkingFolder()
+  const feedbackFiles = [
+    createFeedbackForm(`${firstName} ${lastName}'s Feedback`, true),
+    createFeedbackForm(`${firstName} ${lastName}'s Team Feedback'`, false),
+    SpreadsheetApp.create(`${firstName} ${lastName}'s Feedback Results`),
+    SpreadsheetApp.create(`${firstName} ${lastName}'s Team Feedback Results`)
+  ]
+  const [pfid, tfid, psid, tsid] = feedbackFiles.map(f => f.getId())
+  feedbackFiles.forEach(file => addFileToWorkingFolder(folder, file))
+  getOrCreateTeamSpreadsheet(folder)
     .getSheetByName(team)
-    .appendRow([firstName, lastName, email])
+    .appendRow([firstName, lastName, email, pfid, tfid, psid, tsid])
   return getTeams()
 }
 
