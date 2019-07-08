@@ -72,7 +72,7 @@ function removeTeam(teamName: string): object {
 
 function addPerson({ firstName, lastName, email, team }): object {
   const lock = LockService.getScriptLock()
-  lock.tryLock(20000)
+  lock.tryLock(15000)
   const folder = getOrCreateWorkingFolder()
   const teamSheet = getOrCreateTeamSpreadsheet(folder)
   const feedbackFiles = [
@@ -86,7 +86,7 @@ function addPerson({ firstName, lastName, email, team }): object {
   getOrCreateTeamSpreadsheet(folder)
     .getSheetByName(team)
     .appendRow([firstName, lastName, email, pfid, tfid, psid, tsid])
-  Utilities.sleep(20000)
+  Utilities.sleep(15000)
   lock.releaseLock()
   return getTeams()
 }

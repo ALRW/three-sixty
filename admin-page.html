@@ -135,6 +135,7 @@
       members.forEach(({ firstName, lastName }) => {
         $(`#remove-${firstName}${lastName}`).click(e => {
           e.preventDefault()
+          $(`#remove-${firstName}${lastName}`).replaceWith('<span class="tag is-warning">Removing</span>')
           google.script.run.withSuccessHandler(renderTeams)
             .removePerson({ firstName, lastName, teamName })
         })
