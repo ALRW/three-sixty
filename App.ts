@@ -46,6 +46,11 @@ function matrixToViewModel (sheet) {
   }
 }
 
+function getPersonsIndex(sheet, firstName, lastName) {
+  return sheet.getDataRange().getValues().map(row => row.slice(0, 2).join(''))
+    .indexOf(`${firstName}${lastName}`) + 1
+}
+
 function getTeams(): object {
   return getOrCreateTeamSpreadsheet(getOrCreateWorkingFolder())
     .getSheets()
@@ -66,7 +71,10 @@ function removeTeam(teamName: string): object {
 }
 
 function addPerson({ firstName, lastName, email, team }): object {
+  const lock = LockService.getScriptLock()
+  lock.tryLock(20000)
   const folder = getOrCreateWorkingFolder()
+  const teamSheet = getOrCreateTeamSpreadsheet(folder)
   const feedbackFiles = [
     createFeedbackForm(`${firstName} ${lastName}'s Feedback`, true),
     createFeedbackForm(`${firstName} ${lastName}'s Team Feedback'`, false),
@@ -78,16 +86,18 @@ function addPerson({ firstName, lastName, email, team }): object {
   getOrCreateTeamSpreadsheet(folder)
     .getSheetByName(team)
     .appendRow([firstName, lastName, email, pfid, tfid, psid, tsid])
+  Utilities.sleep(20000)
+  lock.releaseLock()
   return getTeams()
 }
 
 function removePerson({ firstName, lastName, teamName }): object {
-  const teamSheet = getOrCreateTeamSpreadsheet(getOrCreateWorkingFolder())
-    .getSheetByName(teamName)
-  const teamData = teamSheet.getDataRange().getValues()
-  const index = teamData.map(row => row.slice(0, 2).join(''))
-    .indexOf(`${firstName}${lastName}`)
-  teamSheet.deleteRow(index + 1)
+  const folder = getOrCreateWorkingFolder()
+  const teamSheet = getOrCreateTeamSpreadsheet(folder).getSheetByName(teamName)
+  const rowIndex = getPersonsIndex(teamSheet, firstName, lastName)
+  const { 0: docIds } = teamSheet.getRange(rowIndex, 4, 1, 4).getValues()
+  docIds.forEach(id => folder.removeFile(DriveApp.getFileById(id)))
+  teamSheet.deleteRow(rowIndex)
   return getTeams()
 }
 
