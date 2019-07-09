@@ -69,6 +69,10 @@
           </div>
           <p class="help">Enter the email for your team member</p>
         </div>
+        <div id="${teamName}-progress-div" class="field hidden">
+          <label class="label">We're just creating all the docs for your new user: this can take up to 50 seconds</label>
+          <progress id="${teamName}-progress" class="progress is-primary" value="0" max="100"></progress>
+        </div>
         <div class="field">
           <div class="control">
             <button id="${teamName}-add-person-submit" class="button is-primary">Submit</button>
@@ -77,14 +81,14 @@
       </div>
     </div>
   </div>`
-    $('#admin-page').append(html)
+    $(`#${teamName}-modal`).length ? $(`#${teamName}-modal`).replaceWith(html) : $('#admin-page').append(html)
     $(`#${teamName}-modal-background`).click(e => {
       e.preventDefault()
       $(`#${teamName}-modal`).removeClass('is-active')
     })
     $(`#${teamName}-add-person-submit`).click(e => {
       e.preventDefault()
-      $(`#${teamName}-add-person-submit`).addClass('is-loading')
+      $(`#${teamName}-add-person-submit`).addClass('hidden')
       const data = {
         firstName: $(`#${teamName}-add-name`).val(),
         lastName: $(`#${teamName}-add-surname`).val(),
@@ -92,6 +96,14 @@
         team: teamName
       }
       google.script.run.withSuccessHandler(renderTeams).addPerson(data)
+      const interval = setInterval(updateProgress, 1000)
+      const updateProgress = () => {
+        const div = $(`#${teamName}-progress-div`)
+        const prog = $(`#${teamName}-progress`)
+        div.removeClass('hidden')
+        const i = prog.val()
+        i === 100 ? clearInterval(interval) : prog.val(i + 2)
+      }
     })
   }
 

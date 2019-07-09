@@ -35,23 +35,22 @@ function getOrCreateTeamSpreadsheet(folder) {
   return addFileToWorkingFolder(folder, ss)
 }
 
-function matrixToViewModel (sheet) {
-  return {
-    teamName: sheet.getName(),
-    members: sheet.getDataRange().getValues().map((row: string[]) => ({
-      firstName: row[0],
-      lastName: row[1],
-      email: row[2]
-    }))
-  }
-}
+const matrixToViewModel = sheet => ({
+  teamName: sheet.getName(),
+  members: sheet.getDataRange().getValues().map((row: string[]) => ({
+    firstName: row[0],
+    lastName: row[1],
+    email: row[2]
+  }))
+})
 
-function getPersonsIndex(sheet, firstName, lastName) {
-  return sheet.getDataRange().getValues().map(row => row.slice(0, 2).join(''))
+const getPersonsIndex = (sheet, firstName, lastName) =>
+  sheet.getDataRange()
+    .getValues()
+    .map(row => row.slice(0, 2).join(''))
     .indexOf(`${firstName}${lastName}`) + 1
-}
 
-function getTeams(): object {
+function getTeams () {
   return getOrCreateTeamSpreadsheet(getOrCreateWorkingFolder())
     .getSheets()
     .filter(sheet => sheet.getName() !==  DEFAULT_SHEET_NAME)
