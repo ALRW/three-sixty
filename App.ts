@@ -90,6 +90,10 @@ function addPerson({ firstName, lastName, email, team }): object {
   return getTeams()
 }
 
+function runFeedbackRound (teamName: string) {
+  return teamName
+}
+
 function removePerson({ firstName, lastName, teamName }): object {
   const folder = getOrCreateWorkingFolder()
   const teamSheet = getOrCreateTeamSpreadsheet(folder).getSheetByName(teamName)

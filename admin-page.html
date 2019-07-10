@@ -6,7 +6,7 @@
   </section>
   <section class="section">
     <div class="columns is-centered">
-      <div id="team-details" class="column is-half">
+      <div class="column is-half">
         <a id="add-team" class="button navbar-item is-primary is-large">Add Team</a>
       </div>
     </div>
@@ -41,6 +41,35 @@
     e.preventDefault()
     $('#team-modal').removeClass('is-active')
   })
+
+  function renderRunFeedbackModal(teamName){
+    const html = `
+    <div id="${teamName}-run-modal" class="modal">
+      <div id="${teamName}-run-modal-background" class="modal-background"></div>
+      <div class="modal-content">
+        <div class="box">
+          <h2 class="subtitle">Confirm you want to start a round of feedback</h2>
+          <div class="buttons is-right">
+            <a id="${teamName}-run-continue" class="button is-primary">Continue</a>
+            <a id="${teamName}-run-cancel" class="button is-danger">Cancel</a>
+          </div>
+        </div>
+      </div>
+    </div>`
+    $(`#${teamName}-run-modal`).length ? $(`#${teamName}-run-modal`).replaceWith(html) : $('#admin-page').append(html)
+    $(`#${teamName}-run-modal-background`).click(e => {
+      e.preventDefault()
+      $(`#${teamName}-run-modal`).removeClass('is-active')
+    })
+    $(`#${teamName}-run-cancel`).click(e => {
+      e.preventDefault()
+      $(`#${teamName}-run-modal`).removeClass('is-active')
+    })
+    $(`#${teamName}-run-continue`).click(e => {
+      e.preventDefault()
+      google.script.run.withSuccessHandler(renderSuccess).runFeedbackRound(teamName)
+    })
+  }
 
   function renderAddPersonModal(teamName){
     const html = `
@@ -137,7 +166,7 @@
         </tbody></table></div>
       <footer class="card-footer">
       <a id="${teamName}-add" class="card-footer-item">Add Team Member</a>
-      <a id="${teamName}-start" class="card-footer-item">Start Feedback Round</a>
+      <a id="${teamName}-start" class="card-footer-item">Run new feedback round</a>
       <a id="${teamName}-delete" class="card-footer-item">Delete Team</a>
       </footer>
       </div>`}, '')
@@ -155,6 +184,21 @@
     })
   }
 
+  function renderSuccess(teamName) {
+    const html = `
+    <div id="notification-success" class="notification is-success">
+      <button id="notification-delete" class="delete"></button>
+      <h1 class="title">Success</h1>
+      <h2 class="subtitle">Successfully initiated feedback round for ${teamName}</h2>
+    </div>`
+    $(`#${teamName}-run-modal`).removeClass('is-active')
+    $('#team-details').prepend(html)
+    $('#notification-delete').click(e => {
+      e.preventDefault()
+      $('#notification-success').remove()
+    })
+  }
+
   function renderTeams(teams) {
     $('#team-modal').removeClass('is-active')
     $('#add-team-submit').removeClass('is-loading')
@@ -162,14 +206,19 @@
     teams.forEach(({teamName, members}) => {
       $(`#${teamName}-modal`).removeClass('is-active')
       renderAddPersonModal(teamName)
-      $(`#${teamName}-delete`).click(e => {
-        e.preventDefault()
-        google.script.run.withSuccessHandler(renderTeams).removeTeam(teamName)
-      })
+      renderRunFeedbackModal(teamName)
       $(`#${teamName}-add`).click(e => {
         e.preventDefault()
         $(`#${teamName}-add-person-submit`).removeClass('is-loading')
         $(`#${teamName}-modal`).addClass('is-active')
+      })
+      $(`#${teamName}-start`).click(e => {
+        e.preventDefault()
+        $(`#${teamName}-run-modal`).addClass('is-active')
+      })
+      $(`#${teamName}-delete`).click(e => {
+        e.preventDefault()
+        google.script.run.withSuccessHandler(renderTeams).removeTeam(teamName)
       })
     })
   }
