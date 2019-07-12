@@ -97,7 +97,7 @@ function onFormSubmit({ response, source }) {
   })
   const { 0: firstName, 1: lastName } = answers
   const isTeam = source.getTitle().indexOf('Team') > -1
-  const spreadsheetTitle = `${firstName} ${lastName}'s ${isTeam ? 'Team ' : ''}Feedback Results`
+  const spreadsheetTitle = `${firstName.trim()} ${lastName.trim()}'s ${isTeam ? 'Team ' : ''}Feedback Results`
   const sheets = SpreadsheetApp.open(DriveApp.getFilesByName(spreadsheetTitle).next()).getSheets()
   const { [sheets.length - 1]: sheet} = sheets
   sheet.appendRow(answers)
@@ -114,7 +114,17 @@ function createFormTrigger(formId, spreadsheetId) {
 }
 
 function runFeedbackRound (teamName: string) {
-
+  const folder = getOrCreateWorkingFolder()
+  const teamSheet = getOrCreateTeamSpreadsheet(folder).getSheetByName(teamName)
+  const team = teamSheet.getDataRange().getValues()
+  team.forEach(([firstName, lastName, email, pfid, tfid, psid, tsid], i , original) =>{
+    const restOfTeam = original.filter(([fname, lname]) => firstName !== fname && lastName !== lname)
+    createFormTrigger(pfid, psid)
+    createFormTrigger(tfid, tsid)
+    const personalFormUrl = FormApp.openById(pfid).getPublishedUrl()
+    const body = Email.emailBody(firstName, personalFormUrl, restOfTeam)
+    Email.sendEmail(email, '360 Feedback', body)
+  })
   return teamName
 }
 
