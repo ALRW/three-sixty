@@ -67,6 +67,7 @@
     })
     $(`#${teamName}-run-continue`).click(e => {
       e.preventDefault()
+      $(`#${teamName}-run-continue`).addClass('is-loading')
       google.script.run.withSuccessHandler(renderSuccess).runFeedbackRound(teamName)
     })
   }
@@ -125,7 +126,6 @@
         team: teamName
       }
       google.script.run.withSuccessHandler(renderTeams).addPerson(data)
-      const interval = setInterval(updateProgress, 1000)
       const updateProgress = () => {
         const div = $(`#${teamName}-progress-div`)
         const prog = $(`#${teamName}-progress`)
@@ -133,6 +133,7 @@
         const i = prog.val()
         i === 100 ? clearInterval(interval) : prog.val(i + 2)
       }
+      const interval = setInterval(updateProgress, 1000)
     })
   }
 
@@ -192,6 +193,7 @@
       <h2 class="subtitle">Successfully initiated feedback round for ${teamName}</h2>
     </div>`
     $(`#${teamName}-run-modal`).removeClass('is-active')
+    $(`#${teamName}-run-continue`).removeClass('is-loading')
     $('#team-details').prepend(html)
     $('#notification-delete').click(e => {
       e.preventDefault()
