@@ -96,7 +96,7 @@ function onFormSubmit({ response, source }) {
     return typeof i === 'object' ? i[0] : i
   })
   const { 0: firstName, 1: lastName } = answers
-  const isTeam = source.getTitle().includes('Team')
+  const isTeam = source.getTitle().indexOf('Team') > -1
   const spreadsheetTitle = `${firstName} ${lastName}'s ${isTeam ? 'Team ' : ''}Feedback Results`
   const sheets = SpreadsheetApp.open(DriveApp.getFilesByName(spreadsheetTitle).next()).getSheets()
   const { [sheets.length - 1]: sheet} = sheets
@@ -160,6 +160,7 @@ function createFeedbackForm(title: string, isPersonal: boolean) {
     ['Purpose', 'shows conviction over time, developing a sense of purpose for what they do']
   ]
   const form = FormApp.create(title).setProgressBar(true)
+  form.setTitle(title)
   form.addSectionHeaderItem().setTitle('First a little bit about you')
   form.addTextItem().setTitle('What\'s your first name?')
   form.addTextItem().setTitle('What\'s your surname name?')
