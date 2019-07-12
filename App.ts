@@ -76,7 +76,7 @@ function addPerson({ firstName, lastName, email, team }): object {
   const teamSheet = getOrCreateTeamSpreadsheet(folder)
   const feedbackFiles = [
     createFeedbackForm(`${firstName} ${lastName}'s Feedback`, true),
-    createFeedbackForm(`${firstName} ${lastName}'s Team Feedback'`, false),
+    createFeedbackForm(`${firstName} ${lastName}'s Team Feedback`, false),
     SpreadsheetApp.create(`${firstName} ${lastName}'s Feedback Results`),
     SpreadsheetApp.create(`${firstName} ${lastName}'s Team Feedback Results`)
   ]
@@ -90,7 +90,31 @@ function addPerson({ firstName, lastName, email, team }): object {
   return getTeams()
 }
 
+function onFormSubmit({ response, source }) {
+  const answers = response.getItemResponses().map(item => {
+    const i = item.getResponse()
+    return typeof i === 'object' ? i[0] : i
+  })
+  const { 0: firstName, 1: lastName } = answers
+  const isTeam = source.getTitle().includes('Team')
+  const spreadsheetTitle = `${firstName} ${lastName}'s ${isTeam ? 'Team ' : ''}Feedback Results`
+  const sheets = SpreadsheetApp.open(DriveApp.getFilesByName(spreadsheetTitle).next()).getSheets()
+  const { [sheets.length - 1]: sheet} = sheets
+  sheet.appendRow(answers)
+}
+
+function createFormTrigger(formId, spreadsheetId) {
+  const form = FormApp.openById(formId)
+  const spreadsheet = SpreadsheetApp.openById(spreadsheetId)
+  spreadsheet.insertSheet(`Round ${spreadsheet.getSheets().length}`)
+  ScriptApp.newTrigger('onFormSubmit')
+    .forForm(form)
+    .onFormSubmit()
+    .create()
+}
+
 function runFeedbackRound (teamName: string) {
+
   return teamName
 }
 
