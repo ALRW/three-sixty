@@ -1,14 +1,14 @@
 <div id="results-page" class="hidden">
   <section class="section">
     <div class="columns is-centered">
-      <div class="column is-three-quarters">
+      <div id="results-main" class="column is-three-quarters">
         <div class="box">
           <div class="field has-addons">
             <div class="control is-expanded">
-              <input class="input" type="text" placeholder="Search Fullname">
+              <input id="results-input" class="input" type="text" placeholder="Firstname Lastname">
             </div>
             <div class="control">
-              <a class="button is-primary">
+              <a id="results-search" class="button is-primary">
                 Search
               </a>
             </div>
@@ -18,3 +18,33 @@
     </div>
   </section>
 </div>
+<script>
+  function renderError(message) {
+    const html = `
+    <div id="results-notification-error" class="notification is-danger">
+      <button id="results-notification-delete" class="delete"></button>
+      <h1 class="title">Error</h1>
+      <h2 class="subtitle">${message}</h2>
+    </div>`
+    $('#results-main').prepend(html)
+    $('#results-notification-delete').click(e => {
+      e.preventDefault()
+      $('#results-notification-error').remove()
+    })
+  }
+
+  function onResultSuccess(data) {
+    $('#results-search').removeClass('is-loading')
+    if(data.error) {
+      renderError(data.error)
+    }
+    //TODO implement successful path
+  }
+
+  $('#results-search').click(e => {
+    e.preventDefault()
+    const name = $('#results-input').val()
+    $('#results-search').addClass('is-loading')
+    google.script.run.withSuccessHandler(onResultSuccess).getFeedbackData(name)
+  })
+</script>

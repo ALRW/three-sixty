@@ -1,20 +1,14 @@
-// CONSTANTS
 const FOLDER = 'three-sixty-automation'
 const TEAM_SHEET = 'teams'
 const DEFAULT_SHEET = 'Sheet1'
 const DEFAULT_RESULTS_SHEET = 'Form Responses 1'
 
-// SERVING THE USER INTERFACE
 const doGet = () => HtmlService.createTemplateFromFile('index').evaluate();
 
 const include = (filename: string) => HtmlService
   .createHtmlOutputFromFile(filename)
   .getContent();
 
-/*
-ADMIN
-All of the following functions are used by the admin-page
- */
 function getOrCreateWorkingFolder() {
   const folders = DriveApp.getFoldersByName(FOLDER)
   return folders.hasNext() ? folders.next() : DriveApp.createFolder(FOLDER)
@@ -115,6 +109,7 @@ function runFeedbackRound (teamName: string) {
       teamSpreadSheet.insertSheet(`Form Responses ${numberOfRounds + 1}`, {template: teamResultsSheet})
     }
     const personalFormUrl = FormApp.openById(pfid).getPublishedUrl()
+    //TODO simplify api into single function
     const body = Email.emailBody(firstName, personalFormUrl, restOfTeam)
     Email.sendEmail(email, 'New 360 Feedback Round', body)
   })
@@ -129,4 +124,25 @@ function removePerson({ firstName, lastName, teamName }): object {
   docIds.forEach(id => folder.removeFile(DriveApp.getFileById(id)))
   teamSheet.deleteRow(rowIndex)
   return getTeams()
+}
+
+const errorPayload = (errorMessage: string): Object => ({
+  error: errorMessage
+})
+
+function getFeedbackData (name: string) {
+  try {
+    const { 0: firstName, 1: lastName } = name.split(' ')
+    const folder = getOrCreateWorkingFolder()
+    const teamSheet = getOrCreateTeamSpreadsheet(folder)
+      .getSheets()
+      .find(sheet => getPersonsIndex(sheet, firstName, lastName) > 0)
+    const { 0: { 5: psid, 6: tsid } } = teamSheet
+      .getDataRange()
+      .getValues()[getPersonsIndex(teamSheet, firstName, lastName)]
+    Results.createPayload(psid, tsid)
+  } catch (error) {
+    return errorPayload(`Could not find any data for ${name}. Ensure you have entered the name in the format: Firstname Lastname`)
+  }
+  return name
 }
