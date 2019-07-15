@@ -14,7 +14,7 @@ const include = (filename: string) => HtmlService
 /*
 ADMIN
 All of the following functions are used by the admin-page
-*/
+ */
 function getOrCreateWorkingFolder() {
   const folders = DriveApp.getFoldersByName(FOLDER)
   return folders.hasNext() ? folders.next() : DriveApp.createFolder(FOLDER)
@@ -134,13 +134,15 @@ function removePerson({ firstName, lastName, teamName }): object {
 /*
 FORM CREATION
 The following functions define the creation of the feedback form
-*/
+ */
 const createMultipleChoiceGrid = (form, question, helpText) =>
   form.addGridItem()
-  .setTitle(question)
-  .setHelpText(helpText)
-  .setRows(['You...'])
-  .setColumns(['Have room to do more', 'Are spot on', 'Are smashing it'])
+    .setTitle(question)
+    .setHelpText(helpText)
+    .setRows(['You...'])
+    .setColumns(['Have room to do more', 'Are spot on', 'Are smashing it'])
+    .setRequired(true)
+
 
 function createFeedbackForm(title: string, isPersonal: boolean) {
   const youThey = isPersonal ? 'you' : 'they'
@@ -165,15 +167,15 @@ function createFeedbackForm(title: string, isPersonal: boolean) {
   const form = FormApp.create(title).setProgressBar(true)
   form.setTitle(title)
   form.addSectionHeaderItem().setTitle('First a little bit about you')
-  form.addTextItem().setTitle('What\'s your first name?')
-  form.addTextItem().setTitle('What\'s your surname name?')
+  form.addTextItem().setTitle('What\'s your first name?').setRequired(true)
+  form.addTextItem().setTitle('What\'s your surname name?').setRequired(true)
   form.addPageBreakItem().setTitle('The What')
   theWhatQuestions.forEach(([k, v]) => createMultipleChoiceGrid(form, k, v))
   form.addPageBreakItem().setTitle('The How (Our Values)')
   theHowQuestions.forEach(([k, v]) => createMultipleChoiceGrid(form, k, v))
   form.addPageBreakItem().setTitle('General Feedback')
-  form.addTextItem().setTitle(`Generally, what things should ${youThey} keep doing`)
-  form.addTextItem().setTitle(`What things could ${youThey} focus on improving`)
+  form.addTextItem().setTitle(`Generally, what things should ${youThey} keep doing`).setRequired(true)
+  form.addTextItem().setTitle(`What things could ${youThey} focus on improving`).setRequired(true)
   return form
 }
 
