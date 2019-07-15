@@ -1,7 +1,8 @@
 // CONSTANTS
-const FOLDER_NAME = 'three-sixty-automation'
-const TEAM_SHEET_NAME = 'teams'
-const DEFAULT_SHEET_NAME = 'Sheet1'
+const FOLDER = 'three-sixty-automation'
+const TEAM_SHEET = 'teams'
+const DEFAULT_SHEET = 'Sheet1'
+const DEFAULT_RESULTS_SHEET = 'Form Responses 1'
 
 // SERVING THE USER INTERFACE
 const doGet = () => HtmlService.createTemplateFromFile('index').evaluate();
@@ -15,8 +16,8 @@ ADMIN
 All of the following functions are used by the admin-page
 */
 function getOrCreateWorkingFolder() {
-  const folders = DriveApp.getFoldersByName(FOLDER_NAME)
-  return folders.hasNext() ? folders.next() : DriveApp.createFolder(FOLDER_NAME)
+  const folders = DriveApp.getFoldersByName(FOLDER)
+  return folders.hasNext() ? folders.next() : DriveApp.createFolder(FOLDER)
 }
 
 function addFileToWorkingFolder (folder, file) {
@@ -27,11 +28,11 @@ function addFileToWorkingFolder (folder, file) {
 }
 
 function getOrCreateTeamSpreadsheet(folder) {
-  const files = folder.getFilesByName(TEAM_SHEET_NAME)
+  const files = folder.getFilesByName(TEAM_SHEET)
   if (files.hasNext()) {
     return SpreadsheetApp.open(files.next())
   }
-  const ss = SpreadsheetApp.create(TEAM_SHEET_NAME)
+  const ss = SpreadsheetApp.create(TEAM_SHEET)
   return addFileToWorkingFolder(folder, ss)
 }
 
@@ -53,7 +54,7 @@ const getPersonsIndex = (sheet, firstName, lastName) =>
 function getTeams () {
   return getOrCreateTeamSpreadsheet(getOrCreateWorkingFolder())
     .getSheets()
-    .filter(sheet => sheet.getName() !==  DEFAULT_SHEET_NAME)
+    .filter(sheet => sheet.getName() !==  DEFAULT_SHEET)
     .map(sheet => matrixToViewModel(sheet))
 }
 
@@ -73,15 +74,20 @@ function addPerson({ firstName, lastName, email, team }): object {
   const lock = LockService.getScriptLock()
   lock.tryLock(15000)
   const folder = getOrCreateWorkingFolder()
-  const teamSheet = getOrCreateTeamSpreadsheet(folder)
-  const feedbackFiles = [
+  const forms = [
     createFeedbackForm(`${firstName} ${lastName}'s Feedback`, true),
     createFeedbackForm(`${firstName} ${lastName}'s Team Feedback`, false),
+  ]
+  const spreadsheets = [
     SpreadsheetApp.create(`${firstName} ${lastName}'s Feedback Results`),
     SpreadsheetApp.create(`${firstName} ${lastName}'s Team Feedback Results`)
   ]
-  const [pfid, tfid, psid, tsid] = feedbackFiles.map(f => f.getId())
-  feedbackFiles.forEach(file => addFileToWorkingFolder(folder, file))
+  const {0: personalForm, 1: teamForm} = forms
+  const [pfid, tfid, psid, tsid] = [...forms, ...spreadsheets].map(f => f.getId())
+  personalForm.setDestination(FormApp.DestinationType.SPREADSHEET, psid)
+  teamForm.setDestination(FormApp.DestinationType.SPREADSHEET, tsid)
+  forms.forEach(file => addFileToWorkingFolder(folder, file))
+  spreadsheets.forEach(file => addFileToWorkingFolder(folder, file))
   getOrCreateTeamSpreadsheet(folder)
     .getSheetByName(team)
     .appendRow([firstName, lastName, email, pfid, tfid, psid, tsid])
@@ -90,40 +96,27 @@ function addPerson({ firstName, lastName, email, team }): object {
   return getTeams()
 }
 
-function onFormSubmit({ response, source }) {
-  const answers = response.getItemResponses().map(item => {
-    const i = item.getResponse()
-    return typeof i === 'object' ? i[0] : i
-  })
-  const { 0: firstName, 1: lastName } = answers
-  const isTeam = source.getTitle().indexOf('Team') > -1
-  const spreadsheetTitle = `${firstName.trim()} ${lastName.trim()}'s ${isTeam ? 'Team ' : ''}Feedback Results`
-  const sheets = SpreadsheetApp.open(DriveApp.getFilesByName(spreadsheetTitle).next()).getSheets()
-  const { [sheets.length - 1]: sheet} = sheets
-  sheet.appendRow(answers)
-}
-
-function createFormTrigger(formId, spreadsheetId) {
-  const form = FormApp.openById(formId)
-  const spreadsheet = SpreadsheetApp.openById(spreadsheetId)
-  spreadsheet.insertSheet(`Round ${spreadsheet.getSheets().length}`)
-  ScriptApp.newTrigger('onFormSubmit')
-    .forForm(form)
-    .onFormSubmit()
-    .create()
-}
-
 function runFeedbackRound (teamName: string) {
   const folder = getOrCreateWorkingFolder()
   const teamSheet = getOrCreateTeamSpreadsheet(folder).getSheetByName(teamName)
   const team = teamSheet.getDataRange().getValues()
   team.forEach(([firstName, lastName, email, pfid, tfid, psid, tsid], i , original) =>{
     const restOfTeam = original.filter(([fname, lname]) => firstName !== fname && lastName !== lname)
-    createFormTrigger(pfid, psid)
-    createFormTrigger(tfid, tsid)
+    const personalSpreadsheet = SpreadsheetApp.openById(psid)
+    const personalResultsSheet = personalSpreadsheet.getSheetByName(DEFAULT_RESULTS_SHEET)
+    const newSheetRequired = personalResultsSheet.getLastRow() > 1
+    const numberOfRounds = personalSpreadsheet.getSheets().filter(sheet => sheet.getName() !== DEFAULT_SHEET).length
+    if(newSheetRequired) {
+      personalSpreadsheet.insertSheet(`Form Responses ${numberOfRounds + 1}`, {template: personalResultsSheet})
+    }
+    const teamSpreadSheet = SpreadsheetApp.openById(tsid)
+    const teamResultsSheet = teamSpreadSheet.getSheetByName(DEFAULT_RESULTS_SHEET)
+    if(newSheetRequired) {
+      teamSpreadSheet.insertSheet(`Form Responses ${numberOfRounds + 1}`, {template: teamResultsSheet})
+    }
     const personalFormUrl = FormApp.openById(pfid).getPublishedUrl()
     const body = Email.emailBody(firstName, personalFormUrl, restOfTeam)
-    Email.sendEmail(email, '360 Feedback', body)
+    Email.sendEmail(email, 'New 360 Feedback Round', body)
   })
   return teamName
 }
