@@ -32,8 +32,68 @@ namespace Results {
     .getRange(2, 1, sheet.getLastRow(), sheet.getLastColumn())
     .getValues()
 
-  //TODO finish implementation
-  export function createPayload(personalSpreadsheetId, teamSpreadsheetId) {
+  const coreValues = (data: string[][]): string[][] =>
+    data.map(datum =>
+      datum.slice(2, -2))
+
+  const valueToNumeric = (data: string[][]): number[][]=>
+    data.map(datum => datum.map(item => VALUE_MAPPING[item]))
+
+  const dataToChartValues = (data: number[]) =>
+  data.map((n, i) =>
+    ({value: VALUES[i], result: n}))
+
+  const sustains = (data: string[][]): string[] =>
+  data.reduce((res, datum) =>
+    [...res, ...datum.slice(-2, -1)], [])
+
+  const improvements = (data: string[][]): string[] =>
+  data.reduce((res, datum) =>
+    [...res, ...datum.slice(-1)], [])
+
+  const numericMatrixToAverage = (data) => {
+    const sum = data.slice(1).reduce((res, datum) =>
+      datum.map((n, i) =>
+        n + res[i]
+      ), data[0]
+    )
+    return sum.map(n => n / data.length)
+  }
+
+  const formatData = (
+    groupedPersonalData: string[][][],
+    groupedTeamData: string[][][],
+    name: string
+  ) => {
+    const zippedData = groupedPersonalData.map((e, i) => [e, groupedTeamData[i]])
+    const payload: object[] = zippedData.map(([personalResults, teamResults]) => {
+      const personCore = coreValues(personalResults)
+      const personNumeric = valueToNumeric(personCore)
+      const personChartValues = dataToChartValues(personNumeric[0])
+      const personSustains = sustains(personalResults)
+      const personImprovements = improvements(personalResults)
+      const teamCore = coreValues(teamResults)
+      const teamNumeric = valueToNumeric(teamCore)
+      const teamAverage = numericMatrixToAverage(teamNumeric)
+      const teamChartValues = dataToChartValues(teamAverage)
+      const teamSustains = sustains(teamResults)
+      const teamImprovements = improvements(teamResults)
+      return {
+        individual: {
+          values: personChartValues
+        },
+        team: {
+          values: teamChartValues
+        },
+        name: name,
+        sustain: [...personSustains, ...teamSustains],
+        improve: [...personImprovements, ...teamImprovements]
+      }
+    })
+      return payload
+  }
+
+  export function createPayload(personalSpreadsheetId, teamSpreadsheetId, name) {
     const personalSpreadsheet = SpreadsheetApp.openById(personalSpreadsheetId)
     const teamSpreadsheet = SpreadsheetApp.openById(teamSpreadsheetId)
     const isNotDefaultSheet = sheet => sheet.getName() !== DEFAULT_SHEET
@@ -52,7 +112,6 @@ namespace Results {
     }
     const groupedPersonalData = [0, ...rowsPerRoundPersonal].reduce(groupRounds(personalData), [])
     const groupedTeamData = [0, ...rowsPerRoundTeam].reduce(groupRounds(teamData), [])
+    return formatData(groupedPersonalData, groupedTeamData, name)
   }
-
 }
-

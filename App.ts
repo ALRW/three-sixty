@@ -140,7 +140,7 @@ function getFeedbackData (name: string) {
     const { 0: { 5: psid, 6: tsid } } = teamSheet
       .getDataRange()
       .getValues()[getPersonsIndex(teamSheet, firstName, lastName)]
-    return Results.createPayload(psid, tsid)
+    return Results.createPayload(psid, tsid, name)
   } catch (error) {
     return errorPayload(`Could not find any data for ${name}. Ensure you have entered the name in the format: Firstname Lastname`)
   }
