@@ -1,7 +1,7 @@
 <div id="results-page" class="hidden">
   <section class="section">
     <div class="columns is-centered">
-      <div id="results-main" class="column is-three-quarters">
+      <div id="results-header" class="column is-three-quarters">
         <div class="box">
           <div class="field has-addons">
             <div class="control is-expanded">
@@ -17,6 +17,12 @@
       </div>
     </div>
   </section>
+  <section class="section">
+    <div class="columns is-centered">
+      <div id="results-main" class="column is-three-quarters">
+      </div>
+    </div>
+  </section>
 </div>
 <script>
   function renderError(message) {
@@ -26,19 +32,152 @@
       <h1 class="title">Error</h1>
       <h2 class="subtitle">${message}</h2>
     </div>`
-    $('#results-main').prepend(html)
+    $('#results-header').prepend(html)
     $('#results-notification-delete').click(e => {
       e.preventDefault()
       $('#results-notification-error').remove()
     })
   }
 
+  function createVegaSpec(roundData) {
+    var width = window.innerWidth || document.documentElement.clientWidth|| document.body.clientWidth
+    var chartWidth = width * 0.5
+    var chartHeight = chartWidth * 0.6
+    return {
+      $schema: 'https://vega.github.io/schema/vega-lite/v2.0.json',
+      description: '360 feedback output',
+      title: '360 Feedback Results',
+      width: chartWidth,
+      height: chartHeight,
+      layer: [
+        {
+          mark: {
+            type: "rule"
+          },
+          data: {
+            values: [
+              {
+                color: "Where you see yourself"
+              }
+            ]
+          },
+          encoding: {
+            color: {
+              field: "color",
+              sort: false,
+              type: "nominal",
+              legend: {
+                title: "Legend"
+              }
+            }
+          }
+        },
+        {
+          mark: {
+            type: "rule"
+          },
+          data: {
+            values: [
+              {
+                color: "Where the team sees you"
+              }
+            ]
+          },
+          encoding: {
+            color: {
+              field: "color",
+              sort: false,
+              type: "nominal",
+              legend: {
+                title: ""
+              }
+            }
+          }
+        },
+        {
+          data: roundData.individual,
+          mark: {type: 'point', size: 150},
+          encoding: {
+            y: {field: 'result', type: 'quantitative'},
+            x: {field: 'value', type: 'nominal', 'axis': {'labelAngle': -40}}
+          },
+        },
+        {
+          data: roundData.team,
+          mark: {type: 'point', size: 150},
+          encoding: {
+            y: {field: 'result', type: 'quantitative'},
+            x: {field: 'value', type: 'nominal', 'axis': {'labelAngle': -40}},
+            color: {
+              value: 'orange',
+            }
+          },
+        },
+        {
+          data: roundData.individual,
+          mark: 'rule',
+          encoding: {
+            y: {field: 'result', type: 'quantitative', aggregate: 'mean'},
+            size: {value: 2},
+            color: {value: '#377386'}
+          }
+        },
+        {
+          data: roundData.team,
+          mark: 'rule',
+          encoding: {
+            y: {field: 'result', type: 'quantitative', aggregate: 'mean'},
+            size: {value: 2},
+            color: {value: 'orange'}
+          }
+        }
+      ]
+    };
+  }
+
+  function renderRounds(data) {
+    const html = `
+    <div class="box">
+      <div class="tabs">
+      <ul>
+        ${data.map((round, i) => {
+          const isCurrent = i === 0
+          return `
+          <li class="${isCurrent && 'is-active'}">
+            <a id="round${i + 1}">
+              ${isCurrent ? 'Current Round' : `Round ${i + 1}`}
+            </a>
+          </li>`
+        }).join('')}
+        </ul>
+      </div>
+      ${data.map((round, i) => {
+        const isCurrent = i === 0
+        return `
+        <div class="tabs ${!isCurrent && 'hidden'}">
+          <ul>
+            <li class="is-active"><a>Results graph</a></li>
+            <li><a>Sustain</a></li>
+            <li><a>Improve</a></li>
+          </ul>
+        </div>
+        <div id="round${i + 1}-graph"></div>`
+      }).join('')}
+    </div>`
+    $('#results-main').append(html)
+    data.forEach((roundData, i) => {
+      const data = createVegaSpec(roundData)
+      vegaEmbed(`#round${i + 1}-graph`, roundData)
+    })
+  }
+
   function onResultSuccess(data) {
     $('#results-search').removeClass('is-loading')
+    $('#results-main').empty()
     if(data.error) {
-      renderError(data.error)
+      return renderError(data.error)
     }
-    //TODO implement successful path
+    renderRounds(data)
   }
 
   $('#results-search').click(e => {

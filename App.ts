@@ -134,12 +134,12 @@ function getFeedbackData (name: string) {
   try {
     const { 0: firstName, 1: lastName } = name.split(' ')
     const folder = getOrCreateWorkingFolder()
-    const teamSheet = getOrCreateTeamSpreadsheet(folder)
+    const { 0: teamSheet } = getOrCreateTeamSpreadsheet(folder)
       .getSheets()
-      .find(sheet => getPersonsIndex(sheet, firstName, lastName) > 0)
-    const { 0: { 5: psid, 6: tsid } } = teamSheet
+      .filter(sheet => getPersonsIndex(sheet, firstName, lastName) > 0)
+    const { 5: psid, 6: tsid } = teamSheet
       .getDataRange()
-      .getValues()[getPersonsIndex(teamSheet, firstName, lastName)]
+      .getValues()[getPersonsIndex(teamSheet, firstName, lastName) - 1]
     return Results.createPayload(psid, tsid, name)
   } catch (error) {
     return errorPayload(`Could not find any data for ${name}. Ensure you have entered the name in the format: Firstname Lastname`)
