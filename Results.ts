@@ -22,9 +22,9 @@ namespace Results {
   ]
 
   const VALUE_MAPPING: { [s: string]: number }  = {
-    "are smashing it": 3,
-    "are spot on": 2,
-    "have room to do more": 1
+    "Are smashing it": 3,
+    "Are spot on": 2,
+    "Have room to do more": 1
   }
 
   const sheetData = (sheet): string[][] =>
@@ -34,7 +34,7 @@ namespace Results {
 
   const coreValues = (data: string[][]): string[][] =>
     data.map(datum =>
-      datum.slice(2, -2))
+      datum.slice(3, -2))
 
   const valueToNumeric = (data: string[][]): number[][]=>
     data.map(datum => datum.map(item => VALUE_MAPPING[item]))

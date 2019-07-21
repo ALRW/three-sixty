@@ -23,6 +23,7 @@
       </div>
     </div>
   </section>
+  <div id="vis"></div>
 </div>
 <script>
   function renderError(message) {
@@ -43,8 +44,9 @@
     var width = window.innerWidth || document.documentElement.clientWidth|| document.body.clientWidth
     var chartWidth = width * 0.5
     var chartHeight = chartWidth * 0.6
+    console.log(roundData)
     return {
-      $schema: 'https://vega.github.io/schema/vega-lite/v2.0.json',
+      $schema: 'https://vega.github.io/schema/vega-lite/v3.json',
       description: '360 feedback output',
       title: '360 Feedback Results',
       width: chartWidth,
@@ -135,7 +137,7 @@
     };
   }
 
-  function renderRounds(data) {
+  async function renderRounds(data) {
     const html = `
     <div class="box">
       <div class="tabs">
@@ -164,10 +166,13 @@
         <div id="round${i + 1}-graph"></div>`
       }).join('')}
     </div>`
-    $('#results-main').append(html)
-    data.forEach((roundData, i) => {
-      const data = createVegaSpec(roundData)
-      vegaEmbed(`#round${i + 1}-graph`, roundData)
+    const resultsSkeleton = new Promise((resolve) => {
+      $('#results-main').append(html)
+      resolve()
+    })
+    resultsSkeleton.then(() => {
+      const spec = createVegaSpec(data[0])
+      vegaEmbed(`#round1-graph`, spec)
     })
   }
 
