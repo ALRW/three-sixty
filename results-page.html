@@ -137,42 +137,99 @@
     };
   }
 
-  async function renderRounds(data) {
-    const html = `
-    <div class="box">
-      <div class="tabs">
-      <ul>
-        ${data.map((round, i) => {
-          const isCurrent = i === 0
-          return `
-          <li class="${isCurrent && 'is-active'}">
-            <a id="round${i + 1}">
-              ${isCurrent ? 'Current Round' : `Round ${i + 1}`}
-            </a>
-          </li>`
-        }).join('')}
-        </ul>
-      </div>
-      ${data.map((round, i) => {
+  function renderRounds(data) {
+    const html = data.map((round, i) => {
+        const [firstSustain, ...restSustain] = round.sustain
+        const [firstImprove, ...restImprove] = round.improve
         const isCurrent = i === 0
         return `
-        <div class="tabs ${!isCurrent && 'hidden'}">
+          <div class="box">
+        <h1 class="title">Round ${i + 1}</h1>
+          <div id="round${i + 1}-results">
+        <div class="tabs">
           <ul>
-            <li class="is-active"><a>Results graph</a></li>
-            <li><a>Sustain</a></li>
-            <li><a>Improve</a></li>
+          <li class="is-active"><a id="round${i + 1}-show-graph">Results graph</a></li>
+          <li><a id="round${i + 1}-show-sustain">Sustain</a></li>
+          <li><a id="round${i + 1}-show-improve">Improve</a></li>
           </ul>
         </div>
-        <div id="round${i + 1}-graph"></div>`
-      }).join('')}
-    </div>`
+          <div id="round${i + 1}-vis">
+          <div id="round${i + 1}-graph"></div>
+          </div>
+          <div id="round${i + 1}-sustain" class="hidden">
+          <article class="message is-info">
+          <div class="message-header">
+          <p>You Said</p>
+          </div>
+          <div class="message-body">
+        ${firstSustain}
+          </div>
+          </article>
+          <article class="message is-info">
+          <div class="message-header">
+          <p>The Team Said</p>
+          </div>
+          <div class="message-body">
+        ${restSustain.map(rs => `<p>${rs}</p>`).join('')}
+          </div>
+          </article>
+          </div>
+          <div id="round${i + 1}-improve" class="hidden">
+          <article class="message is-info">
+          <div class="message-header">
+          <p>You Said</p>
+          </div>
+          <div class="message-body">
+        ${firstImprove}
+          </div>
+          </article>
+          <article class="message is-info">
+          <div class="message-header">
+          <p>The Team Said</p>
+          </div>
+          <div class="message-body">
+        ${restImprove.map(ri => `<p>${ri}</p>`).join('')}
+          </div>
+          </article>
+          </div>
+          </div>
+        </div>`
+      }).join('')
     const resultsSkeleton = new Promise((resolve) => {
       $('#results-main').append(html)
       resolve()
     })
     resultsSkeleton.then(() => {
-      const spec = createVegaSpec(data[0])
-      vegaEmbed(`#round1-graph`, spec)
+      data.forEach((round, i) => {
+        const spec = createVegaSpec(round)
+        vegaEmbed(`#round${i + 1}-graph`, spec)
+      })
+    })
+    data.forEach((round, i) => {
+      $(`#round${i + 1}-show-graph`).click(e => {
+        $(`#round${i + 1}-vis`).removeClass('hidden')
+        $(`#round${i + 1}-show-graph`).parent().addClass('is-active')
+        $(`#round${i + 1}-sustain`).addClass('hidden')
+        $(`#round${i + 1}-show-sustain`).parent().removeClass('is-active')
+        $(`#round${i + 1}-improve`).addClass('hidden')
+        $(`#round${i + 1}-show-improve`).parent().removeClass('is-active')
+      })
+      $(`#round${i + 1}-show-sustain`).click(e => {
+        $(`#round${i + 1}-vis`).addClass('hidden')
+        $(`#round${i + 1}-show-graph`).parent().removeClass('is-active')
+        $(`#round${i + 1}-sustain`).removeClass('hidden')
+        $(`#round${i + 1}-show-sustain`).parent().addClass('is-active')
+        $(`#round${i + 1}-improve`).addClass('hidden')
+        $(`#round${i + 1}-show-improve`).parent().removeClass('is-active')
+      })
+      $(`#round${i + 1}-show-improve`).click(e => {
+        $(`#round${i + 1}-vis`).addClass('hidden')
+        $(`#round${i + 1}-show-graph`).parent().removeClass('is-active')
+        $(`#round${i + 1}-sustain`).addClass('hidden')
+        $(`#round${i + 1}-show-sustain`).parent().removeClass('is-active')
+        $(`#round${i + 1}-improve`).removeClass('hidden')
+        $(`#round${i + 1}-show-improve`).parent().addClass('is-active')
+      })
     })
   }
 
