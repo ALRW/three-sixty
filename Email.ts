@@ -8,7 +8,7 @@ namespace Email {
     })
   }
 
-  const emailBody = ({firstName, personalFormUrl, team}) => {
+  const emailBody = ({firstName, personalFormUrl, restOfTeam}) => {
     return `
     <!doctype html>
 <html>
@@ -323,7 +323,7 @@ namespace Email {
                           </tbody>
                         </table>
                         <p>A crucial part of this process is also to have a think about the other members of your team and give them the same thoughtful feedback that you would like to receive. So could you answer the following questionaires for your team members:</p>
-                        ${team.map(([firstName, lastName, email, pfid, tfid, psid, tsid]) => {
+                        ${restOfTeam.map(([firstName, lastName, email, pfid, tfid, psid, tsid]) => {
                           const formUrl = FormApp.openById(tfid).getPublishedUrl()
                           const button = `
                         <table role="presentation" border="0" cellpadding="0" cellspacing="0" class="btn btn-primary">
