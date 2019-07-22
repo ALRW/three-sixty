@@ -1,14 +1,14 @@
 namespace Email {
 
-  export function sendEmail (email, subject, body) {
+  export function sendEmail (email, subject, bodyData) {
     MailApp.sendEmail({
       to: email,
       subject: subject,
-      htmlBody: body
+      htmlBody: emailBody(bodyData)
     })
   }
 
-  export function emailBody(firstName, personalFormUrl, team) {
+  const emailBody = ({firstName, personalFormUrl, team}) => {
     return `
     <!doctype html>
 <html>

@@ -42,8 +42,8 @@ const matrixToViewModel = sheet => ({
 const getPersonsIndex = (sheet, firstName, lastName) =>
   sheet.getDataRange()
     .getValues()
-    .map(row => row.slice(0, 2).join(''))
-    .indexOf(`${firstName}${lastName}`) + 1
+    .map(row => row.slice(0, 2).join('')).toLowerCase()
+    .indexOf(`${firstName}${lastName}`.toLowerCase()) + 1
 
 function getTeams () {
   return getOrCreateTeamSpreadsheet(getOrCreateWorkingFolder())
@@ -94,7 +94,7 @@ function runFeedbackRound (teamName: string) {
   const folder = getOrCreateWorkingFolder()
   const teamSheet = getOrCreateTeamSpreadsheet(folder).getSheetByName(teamName)
   const team = teamSheet.getDataRange().getValues()
-  team.forEach(([firstName, lastName, email, pfid, tfid, psid, tsid], i , original) =>{
+  team.forEach(([firstName, lastName, email, pfid, tfid, psid, tsid], i, original) => {
     const restOfTeam = original.filter(([fname, lname]) => firstName !== fname && lastName !== lname)
     const personalSpreadsheet = SpreadsheetApp.openById(psid)
     const personalResultsSheet = personalSpreadsheet.getSheetByName(DEFAULT_RESULTS_SHEET)
@@ -109,9 +109,7 @@ function runFeedbackRound (teamName: string) {
       teamSpreadSheet.insertSheet(`Form Responses ${numberOfRounds + 1}`, {template: teamResultsSheet})
     }
     const personalFormUrl = FormApp.openById(pfid).getPublishedUrl()
-    //TODO simplify api into single function
-    const body = Email.emailBody(firstName, personalFormUrl, restOfTeam)
-    Email.sendEmail(email, 'New 360 Feedback Round', body)
+    Email.sendEmail(email, 'New 360 Feedback Round', {firstName, personalFormUrl, restOfTeam})
   })
   return teamName
 }
