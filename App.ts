@@ -42,7 +42,7 @@ const matrixToViewModel = sheet => ({
 const getPersonsIndex = (sheet, firstName, lastName) =>
   sheet.getDataRange()
     .getValues()
-    .map(row => row.slice(0, 2).join('')).toLowerCase()
+    .map(row => row.slice(0, 2).join('').toLowerCase())
     .indexOf(`${firstName}${lastName}`.toLowerCase()) + 1
 
 function getTeams () {

@@ -101,16 +101,16 @@
           data: roundData.individual,
           mark: {type: 'point', size: 150},
           encoding: {
-            y: {field: 'result', type: 'quantitative'},
-            x: {field: 'value', type: 'nominal', 'axis': {'labelAngle': -40}}
+            y: {field: 'result', type: 'quantitative', scale: { domain: [0, 3]}},
+            x: {field: 'value', type: 'nominal', axis: { labelAngle: -40}}
           },
         },
         {
           data: roundData.team,
           mark: {type: 'point', size: 150},
           encoding: {
-            y: {field: 'result', type: 'quantitative'},
-            x: {field: 'value', type: 'nominal', 'axis': {'labelAngle': -40}},
+            y: {field: 'result', type: 'quantitative', scale: { domain: [0, 3]}},
+            x: {field: 'value', type: 'nominal', axis: { labelAngle: -40}},
             color: {
               value: 'orange',
             }
