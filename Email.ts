@@ -342,7 +342,7 @@ namespace Email {
                           </tbody>
                         </table>`
                           return button
-                        })}
+                        }).join('')}
 
                         <p>If there are any issues with any of the above just let me know</p>
                       </td>
