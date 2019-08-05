@@ -35,6 +35,7 @@ const matrixToViewModel = sheet => ({
   members: sheet.getDataRange().getValues().map((row: string[]) => ({
     firstName: row[0],
     lastName: row[1],
+    role: row[7],
     email: row[2]
   }))
 })
@@ -64,7 +65,7 @@ function removeTeam(teamName: string): object {
   return getTeams()
 }
 
-function addPerson({ firstName, lastName, email, team }): object {
+function addPerson({ firstName, lastName, email, role, team }): object {
   const lock = LockService.getScriptLock()
   lock.tryLock(15000)
   const folder = getOrCreateWorkingFolder()
@@ -84,7 +85,7 @@ function addPerson({ firstName, lastName, email, team }): object {
   spreadsheets.forEach(file => addFileToWorkingFolder(folder, file))
   getOrCreateTeamSpreadsheet(folder)
     .getSheetByName(team)
-    .appendRow([firstName, lastName, email, pfid, tfid, psid, tsid])
+    .appendRow([firstName, lastName, email, pfid, tfid, psid, tsid, role])
   Utilities.sleep(15000)
   lock.releaseLock()
   return getTeams()

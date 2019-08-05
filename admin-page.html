@@ -1,7 +1,7 @@
 <div id="admin-page" class="hidden">
   <section class="section">
     <div class="columns is-centered">
-      <div id="team-details" class="column is-three-quarters"></div>
+      <div id="team-details" class="column is-four-fifths"></div>
     </div>
   </section>
   <section class="section">
@@ -93,6 +93,17 @@
           <p class="help">Enter the lastname/surname for your team member</p>
         </div>
         <div class="field">
+          <div class="control">
+            <div class="select">
+              <select id="${teamName}-add-role">
+                <option>Engineer</option>
+                <option>Product Manager</option>
+                <option>Scrum Master / Delivery Manager</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <div class="field">
           <label class="label">Email</label>
           <div class="control">
             <input id="${teamName}-add-email" class="input" type="email" placeholder="steve.smith@mysweetbiz.com">
@@ -100,7 +111,7 @@
           <p class="help">Enter the email for your team member</p>
         </div>
         <div id="${teamName}-progress-div" class="field hidden">
-          <label class="label">We're just creating all the docs for your new user: this can take up to 50 seconds</label>
+          <label class="label">We're just creating all the docs for your new user: usually takes around a minute</label>
           <progress id="${teamName}-progress" class="progress is-primary" value="0" max="100"></progress>
         </div>
         <div class="field">
@@ -122,6 +133,7 @@
       const data = {
         firstName: $(`#${teamName}-add-name`).val(),
         lastName: $(`#${teamName}-add-surname`).val(),
+        role: $(`#${teamName}-add-role`).val(),
         email: $(`#${teamName}-add-email`).val(),
         team: teamName
       }
@@ -150,16 +162,18 @@
       <tr>
       <th>First Name</th>
       <th>Last Name</th>
+      <th>Role</th>
       <th>Email Address</th>
       <th>Remove From Team</th>
       </tr>
       </thead>
       <tbody>
-        ${members.reduce(function(result, { firstName, lastName, email }){
+        ${members.reduce(function(result, { firstName, lastName, role, email }){
           return `${result}
           <tr>
           <th>${firstName}</th>
           <th>${lastName}</th>
+          <th>${role}</th>
           <th>${email}</th>
           <th><a id="remove-${firstName}${lastName}">Remove ${firstName}</a></th>
           </tr>`
