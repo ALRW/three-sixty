@@ -25,6 +25,11 @@ npm install -g @google/clasp && npm install
 clasp login
 ```
 
+> :warning: At this point you may be asked to enable to google apps script API.
+Through the script console. Be aware that once this has been done it can take up
+to 24 hours for this change to take affect and the following commands will throw
+errors until it is complete.
+
 ```sh
 clasp create --type webapp
 ```
