@@ -70,8 +70,8 @@ function addPerson({ firstName, lastName, email, role, team }): object {
   lock.tryLock(15000)
   const folder = getOrCreateWorkingFolder()
   const forms = [
-    Form.createFeedbackForm(`${firstName} ${lastName}'s Feedback`, true),
-    Form.createFeedbackForm(`${firstName} ${lastName}'s Team Feedback`, false),
+    Form.createFeedbackForm(`${firstName} ${lastName}'s Feedback`, true, role),
+    Form.createFeedbackForm(`${firstName} ${lastName}'s Team Feedback`, false, role),
   ]
   const spreadsheets = [
     SpreadsheetApp.create(`${firstName} ${lastName}'s Feedback Results`),
