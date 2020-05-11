@@ -78,10 +78,7 @@ namespace Form {
     isPersonal: boolean,
     role: string
   ) {
-    if(role === 'Scrum Master / Delivery Manager') {
-      //FIXME create delivery form
-      return createEngineerForm(title, isPersonal)
-    } else if (role === 'Product Manager') {
+    if(role === 'Product Manager') {
       return createProductForm(title, isPersonal)
     } else {
       return createEngineerForm(title, isPersonal)
