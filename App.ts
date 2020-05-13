@@ -54,8 +54,9 @@ function getTeams () {
 }
 
 function addTeam(teamName: string): object {
+  const sanitisedName = teamName.replace(' ', '-')
   const teamSpreadSheet = getOrCreateTeamSpreadsheet(getOrCreateWorkingFolder())
-  teamSpreadSheet.insertSheet(teamName)
+  teamSpreadSheet.insertSheet(sanitisedName)
   return getTeams()
 }
 
