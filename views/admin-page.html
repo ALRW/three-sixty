@@ -4,6 +4,13 @@
       <div id="team-details" class="column is-four-fifths"></div>
     </div>
   </section>
+  <section id="page-loading" class="section">
+    <div class="columns is-centered">
+        <div class="column is-half">
+          <progress class="progress is-medium is-primary" max="100">45%</progress>
+        </div>
+    </div>
+    </section>
   <section class="section">
     <div class="columns is-centered">
       <div class="column is-half">
@@ -215,6 +222,7 @@
   }
 
   function renderTeams(teams) {
+    $('#page-loading').addClass('hidden')
     $('#team-modal').removeClass('is-active')
     $('#add-team-submit').removeClass('is-loading')
     renderTeamCards(teams)
