@@ -91,12 +91,29 @@ function addPerson({ firstName, lastName, email, role, team }): object {
   return getTeams()
 }
 
+const multiplyArray = (arr, length) => Array.from({ length }, () => arr).flat()
+
 function runFeedbackRound (teamName: string) {
   const folder = getOrCreateWorkingFolder()
   const teamSheet = getOrCreateTeamSpreadsheet(folder).getSheetByName(teamName)
   const team = teamSheet.getDataRange().getValues()
-  team.forEach(([firstName, lastName, email, pfid, tfid, psid, tsid], i, original) => {
-    const restOfTeam = original.filter(([fname, lname]) => firstName !== fname && lastName !== lname)
+  
+  // if there are more than chunkSize number of people limit the number of forms
+  // each person receives
+  const chunkSize = team.length > 4 ? 4 : team.length - 1
+  const allFeedbackRequests = multiplyArray(team, chunkSize)
+  const rotatedPeers = [
+    allFeedbackRequests[allFeedbackRequests.length - 1],
+    ...allFeedbackRequests.slice(1, allFeedbackRequests.length - 1),
+    allFeedbackRequests[0]
+  ]
+  const teamWithPeers = team.map((person, index) => {
+    const startIndex = index * chunkSize
+    const endIndex = startIndex + chunkSize
+    return [...person, rotatedPeers.slice(startIndex, endIndex)]
+  })
+
+  teamWithPeers.forEach(([firstName, lastName, email, pfid, tfid, psid, tsid, peers], i, original) => {
     const personalSpreadsheet = SpreadsheetApp.openById(psid)
     const personalResultsSheet = personalSpreadsheet.getSheetByName(DEFAULT_RESULTS_SHEET)
     const newSheetRequired = personalResultsSheet.getLastRow() > 1
@@ -110,7 +127,7 @@ function runFeedbackRound (teamName: string) {
       teamSpreadSheet.insertSheet(`Form Responses ${numberOfRounds + 1}`, {template: teamResultsSheet})
     }
     const personalFormUrl = FormApp.openById(pfid).getPublishedUrl()
-    Email.sendEmail(email, 'New 360 Feedback Round', {firstName, personalFormUrl, restOfTeam})
+    Email.sendEmail(email, 'New 360 Feedback Round', {firstName, personalFormUrl, peers})
   })
   return teamName
 }
@@ -125,7 +142,7 @@ function removePerson({ firstName, lastName, teamName }): object {
   return getTeams()
 }
 
-const errorPayload = (errorMessage: string): Object => ({
+const errorPayload = (errorMessage: string): object => ({
   error: errorMessage
 })
 
