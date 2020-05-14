@@ -8,7 +8,7 @@ namespace Email {
     })
   }
 
-  const emailBody = ({firstName, personalFormUrl, restOfTeam: peers}) => {
+  const emailBody = ({firstName, personalFormUrl, peers}) => {
     return `
     <!doctype html>
 <html>
