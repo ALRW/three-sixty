@@ -114,7 +114,7 @@ function runFeedbackRound (teamName: string) {
     return [...person, rotatedPeers.slice(startIndex, endIndex)]
   })
 
-  teamWithPeers.forEach(([firstName, lastName, email, pfid, tfid, psid, tsid, peers], i, original) => {
+  teamWithPeers.forEach(([firstName, lastName, email, pfid, tfid, psid, tsid, role, peers], i, original) => {
     const personalSpreadsheet = SpreadsheetApp.openById(psid)
     const personalResultsSheet = personalSpreadsheet.getSheetByName(DEFAULT_RESULTS_SHEET)
     const newSheetRequired = personalResultsSheet.getLastRow() > 1
