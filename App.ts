@@ -1,8 +1,3 @@
-const FOLDER = 'three-sixty-automation'
-const TEAM_SHEET = 'teams'
-const DEFAULT_SHEET = 'Sheet1'
-const DEFAULT_RESULTS_SHEET = 'Form Responses 1'
-
 const doGet = () => HtmlService.createTemplateFromFile('index').evaluate();
 
 const include = (filename: string) => HtmlService
@@ -10,8 +5,8 @@ const include = (filename: string) => HtmlService
   .getContent();
 
 function getOrCreateWorkingFolder() {
-  const folders = DriveApp.getFoldersByName(FOLDER)
-  return folders.hasNext() ? folders.next() : DriveApp.createFolder(FOLDER)
+  const folders = DriveApp.getFoldersByName(Constants.FOLDER)
+  return folders.hasNext() ? folders.next() : DriveApp.createFolder(Constants.FOLDER)
 }
 
 function addFileToWorkingFolder (folder, file) {
@@ -22,11 +17,11 @@ function addFileToWorkingFolder (folder, file) {
 }
 
 function getOrCreateTeamSpreadsheet(folder) {
-  const files = folder.getFilesByName(TEAM_SHEET)
+  const files = folder.getFilesByName(Constants.TEAM_SHEET)
   if (files.hasNext()) {
     return SpreadsheetApp.open(files.next())
   }
-  const ss = SpreadsheetApp.create(TEAM_SHEET)
+  const ss = SpreadsheetApp.create(Constants.TEAM_SHEET)
   return addFileToWorkingFolder(folder, ss)
 }
 
@@ -49,7 +44,7 @@ const getPersonsIndex = (sheet, firstName, lastName) =>
 function getTeams () {
   return getOrCreateTeamSpreadsheet(getOrCreateWorkingFolder())
     .getSheets()
-    .filter(sheet => sheet.getName() !==  DEFAULT_SHEET)
+    .filter(sheet => sheet.getName() !==  Constants.DEFAULT_SHEET)
     .map(sheet => matrixToViewModel(sheet))
 }
 
@@ -116,14 +111,14 @@ function runFeedbackRound (teamName: string) {
 
   teamWithPeers.forEach(([firstName, lastName, email, pfid, tfid, psid, tsid, role, peers], i, original) => {
     const personalSpreadsheet = SpreadsheetApp.openById(psid)
-    const personalResultsSheet = personalSpreadsheet.getSheetByName(DEFAULT_RESULTS_SHEET)
+    const personalResultsSheet = personalSpreadsheet.getSheetByName(Constants.DEFAULT_RESULTS_SHEET)
     const newSheetRequired = personalResultsSheet.getLastRow() > 1
-    const numberOfRounds = personalSpreadsheet.getSheets().filter(sheet => sheet.getName() !== DEFAULT_SHEET).length
+    const numberOfRounds = personalSpreadsheet.getSheets().filter(sheet => sheet.getName() !== Constants.DEFAULT_SHEET).length
     if(newSheetRequired) {
       personalSpreadsheet.insertSheet(`Form Responses ${numberOfRounds + 1}`, {template: personalResultsSheet})
     }
     const teamSpreadSheet = SpreadsheetApp.openById(tsid)
-    const teamResultsSheet = teamSpreadSheet.getSheetByName(DEFAULT_RESULTS_SHEET)
+    const teamResultsSheet = teamSpreadSheet.getSheetByName(Constants.DEFAULT_RESULTS_SHEET)
     if(newSheetRequired) {
       teamSpreadSheet.insertSheet(`Form Responses ${numberOfRounds + 1}`, {template: teamResultsSheet})
     }

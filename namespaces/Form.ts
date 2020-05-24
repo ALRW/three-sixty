@@ -78,7 +78,7 @@ namespace Form {
     isPersonal: boolean,
     role: string
   ) {
-    if(role === 'Product Manager') {
+    if(role === Constants.PRODUCT_MANAGER) {
       return createProductForm(title, isPersonal)
     } else {
       return createEngineerForm(title, isPersonal)
