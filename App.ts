@@ -1,8 +1,10 @@
-const doGet = () => HtmlService.createTemplateFromFile('index').evaluate();
+function doGet() {
+  return HtmlService.createTemplateFromFile('index').evaluate()
+}
 
-const include = (filename: string) => HtmlService
-  .createHtmlOutputFromFile(filename)
-  .getContent();
+function include(filename: string) {
+  return HtmlService.createHtmlOutputFromFile(filename).getContent()
+}
 
 function getOrCreateWorkingFolder() {
   const folders = DriveApp.getFoldersByName(Constants.FOLDER)
@@ -25,21 +27,24 @@ function getOrCreateTeamSpreadsheet(folder) {
   return addFileToWorkingFolder(folder, ss)
 }
 
-const matrixToViewModel = sheet => ({
-  teamName: sheet.getName(),
-  members: sheet.getDataRange().getValues().map((row: string[]) => ({
-    firstName: row[0],
-    lastName: row[1],
-    role: row[7],
-    email: row[2]
-  }))
-})
+function matrixToViewModel(sheet) {
+  return {
+    teamName: sheet.getName(),
+    members: sheet.getDataRange().getValues().map((row: string[]) => ({
+      firstName: row[0],
+      lastName: row[1],
+      role: row[7],
+      email: row[2]
+    }))
+  }
+}
 
-const getPersonsIndex = (sheet, firstName, lastName) =>
-  sheet.getDataRange()
+function getPersonsIndex(sheet, firstName, lastName) {
+  return sheet.getDataRange()
     .getValues()
     .map(row => row.slice(0, 2).join('').toLowerCase())
     .indexOf(`${firstName}${lastName}`.toLowerCase()) + 1
+}
 
 function getTeams () {
   return getOrCreateTeamSpreadsheet(getOrCreateWorkingFolder())
@@ -87,7 +92,9 @@ function addPerson({ firstName, lastName, email, role, team }): object {
   return getTeams()
 }
 
-const multiplyArray = (arr, length) => Array.from({ length }, () => arr).flat()
+function multiplyArray(arr, length){
+  return Array.from({ length }, () => arr).flat()
+}
 
 function runFeedbackRound (teamName: string) {
   const folder = getOrCreateWorkingFolder()
