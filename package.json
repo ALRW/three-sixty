@@ -1,0 +1,30 @@
+{
+  "name": "three-sixty",
+  "version": "1.0.0",
+  "description": "A simple three sixty feedback tool",
+  "main": "App.ts",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ALRW/three-sixty.git"
+  },
+  "keywords": [
+    "three-sixty"
+  ],
+  "author": "ALRW",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ALRW/three-sixty/issues"
+  },
+  "homepage": "https://github.com/ALRW/three-sixty#readme",
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^3.0.1",
+    "@typescript-eslint/parser": "^3.0.1",
+    "eslint": "^7.1.0"
+  },
+  "dependencies": {
+    "@types/google-apps-script": "^1.0.14"
+  }
+}
