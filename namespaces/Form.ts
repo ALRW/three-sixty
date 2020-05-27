@@ -61,9 +61,27 @@ namespace Form {
       ['Communication', 'They are concise and articulate in their communication to you. You come away from interactions with a better understanding and clear actions, NOT confused. Thay use a variety of tools/techniques to make their communication effective. You feel they give you space to feedback and they take on what you say. They help you by re-clarifying thing if you don\'t understand.'],
       ['Accountability', 'They own the domain with you. They succeed and fail with you and help you through challenges.'],
       ['Roadmap', 'They layout a roadmap so that you clearly know the high level path to achieving the vision and goals they set out. You know what the current priorities are, what\'s happening now and what\'s coming next and byeond.'],
-      ['Delivery', 'They support and motivate you through delivery. Clearing the way when blockers arise and\or supporting you when things are delivered.'],
+      ['Delivery', 'They support and motivate you through delivery. Clearing the way when blockers arise and/or supporting you when things are delivered.'],
       ['People Orientation', 'They support you as a team member by taking the time to help you understand issues, working with you on solving problems and delivering together. They protect and support you and the team when things aren\'t going well and/or they support your team through deliveries and issues.'],
-      ['Adaptability', 'They are able to adapt to changing situations and uncertainty, covering where there are gaps and esnuring the team and the stakeholders keep moving as a whole.']
+      ['Adaptability', 'They are able to adapt to changing situations and uncertainty, covering where there are gaps and ensuring the team and the stakeholders keep moving as a whole.']
+    ]
+    const form = FormApp.create(title).setProgressBar(true)
+    createFormHead(form, title)
+    form.addPageBreakItem().setTitle('Their Role')
+    questions.forEach(([k, v]) => createMultipleChoiceGrid(form, k, v))
+    createFormTail(form, isPersonal)
+    return form
+  }
+
+  const createDeliveryForm = (title: string, isPersonal: boolean) => {
+    const questions = [
+      ['Environment', 'Helps to create an environment in which team members feel more confident to personally commit to achieving the goals of the team.'],
+      ['Empowerment', 'Empower the team members to have the courage to do the right thing and lean into tough problems.'],
+      ['Focus', 'Supports the team members to focus on the teams immediate goals'],
+      ['Transparency', 'Leads the way in fostering a culture of openness about the work and challenges faced in doing the work'],
+      ['Culture', 'Promotes and enhances the levels of respect the team members have for each other and the belief that we are all capable independent people.'],
+      ['Delivery', 'They support and motivate you through delivery. Clearing the way when blockers arise and/or supporting you when things are delivered.'],
+      ['Adaptability', 'They are able to adapt to changing situations and uncertainty, covering where there are gaps and ensuring the team keeps moving as a whole.']
     ]
     const form = FormApp.create(title).setProgressBar(true)
     createFormHead(form, title)
@@ -80,6 +98,8 @@ namespace Form {
   ) {
     if(role === Constants.PRODUCT_MANAGER) {
       return createProductForm(title, isPersonal)
+    } else if(role === Constants.SCRUM_MASTER) {
+      return createDeliveryForm(title, isPersonal)
     } else {
       return createEngineerForm(title, isPersonal)
     }
