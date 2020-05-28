@@ -92,8 +92,8 @@ function addPerson({ firstName, lastName, email, role, team }): object {
   return getTeams()
 }
 
-function multiplyArray(arr, length){
-  return Array.from({ length }, () => arr).flat()
+function multiplyArray(arr, times){
+  return times ? arr.concat(multiplyArray(arr, times - 1)) : []
 }
 
 function runFeedbackRound (teamName: string) {
