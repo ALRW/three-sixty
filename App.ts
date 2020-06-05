@@ -3,6 +3,7 @@ import { Constants } from './namespaces/Constants'
 import { Form } from './namespaces/Form'
 import { Email } from './namespaces/Email'
 import { Results } from './namespaces/Results'
+import { Helpers } from './namespaces/Helpers'
 
 function doGet() {
   return HtmlService.createTemplateFromFile('index').evaluate()
@@ -31,18 +32,6 @@ function getOrCreateTeamSpreadsheet(folder) {
   return addFileToWorkingFolder(folder, ss)
 }
 
-function matrixToViewModel(sheet: GoogleAppsScript.Spreadsheet.Sheet) {
-  return {
-    teamName: sheet.getName(),
-    members: sheet.getDataRange().getValues().map((row: string[]) => ({
-      firstName: row[0],
-      lastName: row[1],
-      role: row[7],
-      email: row[2]
-    }))
-  }
-}
-
 function getPersonsIndex(sheet, firstName, lastName) {
   return sheet.getDataRange()
     .getValues()
@@ -54,7 +43,7 @@ function getTeams () {
   return getOrCreateTeamSpreadsheet(getOrCreateWorkingFolder())
     .getSheets()
     .filter(sheet => sheet.getName() !==  Constants.DEFAULT_SHEET)
-    .map(sheet => matrixToViewModel(sheet))
+    .map(Helpers.matrixToViewModel)
 }
 
 function addTeam(teamName: string): object {
