@@ -19,6 +19,28 @@
     "url": "https://github.com/ALRW/three-sixty/issues"
   },
   "homepage": "https://github.com/ALRW/three-sixty#readme",
+  "jest": {
+    "clearMocks": true,
+    "coverageDirectory": "coverage",
+    "testEnvironment": "node"
+  },
+  "babel": {
+    "presets": [
+      [
+        "@babel/preset-env",
+        {
+          "targets": {
+            "node": "current"
+          }
+        }
+      ],
+      ["@babel/preset-typescript",
+        {
+          "allowNamespaces": true
+        }
+      ]
+    ]
+  },
   "devDependencies": {
     "@babel/core": "^7.10.2",
     "@babel/preset-env": "^7.10.2",

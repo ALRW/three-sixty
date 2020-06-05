@@ -1,6 +1,4 @@
 typescript.json
 package.json
-babel.config.js
-jest.config.js
 **/node_modules/**
 **/spec/**
