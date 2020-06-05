@@ -1,4 +1,4 @@
-namespace Form {
+export namespace Form {
 
   const createMultipleChoiceGrid = (form, question, helpText) =>
     form.addGridItem()

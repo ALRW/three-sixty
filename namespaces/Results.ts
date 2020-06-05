@@ -1,4 +1,4 @@
-namespace Results {
+export namespace Results {
 
   const VALUE_MAPPING: { [s: string]: number }  = {
     "Are smashing it": 3,

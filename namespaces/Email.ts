@@ -1,4 +1,4 @@
-namespace Email {
+export namespace Email {
 
   export function sendEmail (email, subject, bodyData) {
     MailApp.sendEmail({
