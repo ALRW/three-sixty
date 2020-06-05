@@ -1,3 +1,9 @@
+//testing whether imports affects the app script flow
+import { Constants } from './namespaces/Constants'
+import { Form } from './namespaces/Form'
+import { Email } from './namespaces/Email'
+import { Results } from './namespaces/Results'
+
 function doGet() {
   return HtmlService.createTemplateFromFile('index').evaluate()
 }
@@ -20,14 +26,12 @@ function addFileToWorkingFolder (folder, file) {
 
 function getOrCreateTeamSpreadsheet(folder) {
   const files = folder.getFilesByName(Constants.TEAM_SHEET)
-  if (files.hasNext()) {
-    return SpreadsheetApp.open(files.next())
-  }
+  if (files.hasNext()) return SpreadsheetApp.open(files.next())
   const ss = SpreadsheetApp.create(Constants.TEAM_SHEET)
   return addFileToWorkingFolder(folder, ss)
 }
 
-function matrixToViewModel(sheet) {
+function matrixToViewModel(sheet: GoogleAppsScript.Spreadsheet.Sheet) {
   return {
     teamName: sheet.getName(),
     members: sheet.getDataRange().getValues().map((row: string[]) => ({
