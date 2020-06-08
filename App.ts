@@ -3,7 +3,7 @@ import { Constants } from './namespaces/Constants'
 import { Form } from './namespaces/Form'
 import { Email } from './namespaces/Email'
 import { Results } from './namespaces/Results'
-import { Helpers } from './namespaces/Helpers'
+import { Util } from './namespaces/Util'
 
 function doGet() {
   return HtmlService.createTemplateFromFile('index').evaluate()
@@ -32,18 +32,12 @@ function getOrCreateTeamSpreadsheet(folder) {
   return addFileToWorkingFolder(folder, ss)
 }
 
-function getPersonsIndex(sheet, firstName, lastName) {
-  return sheet.getDataRange()
-    .getValues()
-    .map(row => row.slice(0, 2).join('').toLowerCase())
-    .indexOf(`${firstName}${lastName}`.toLowerCase()) + 1
-}
-
+// TODO pass in teamSpreadSheet as an optional argument
 function getTeams () {
   return getOrCreateTeamSpreadsheet(getOrCreateWorkingFolder())
     .getSheets()
-    .filter(sheet => sheet.getName() !==  Constants.DEFAULT_SHEET)
-    .map(Helpers.matrixToViewModel)
+    .filter(Util.isNotDefaultSheet)
+    .map(Util.matrixToViewModel)
 }
 
 function addTeam(teamName: string): object {
@@ -85,19 +79,16 @@ function addPerson({ firstName, lastName, email, role, team }): object {
   return getTeams()
 }
 
-function multiplyArray(arr, times){
-  return times ? arr.concat(multiplyArray(arr, times - 1)) : []
-}
-
 function runFeedbackRound (teamName: string) {
   const folder = getOrCreateWorkingFolder()
   const teamSheet = getOrCreateTeamSpreadsheet(folder).getSheetByName(teamName)
   const team = teamSheet.getDataRange().getValues()
   
+  // FIXME find better algorithm for this as it doesn't work
   // if there are more than chunkSize number of people limit the number of forms
   // each person receives
   const chunkSize = team.length > 4 ? 4 : team.length - 1
-  const allFeedbackRequests = multiplyArray(team, chunkSize)
+  const allFeedbackRequests = Util.multiplyArray(team, chunkSize)
   const rotatedPeers = [
     allFeedbackRequests[allFeedbackRequests.length - 1],
     ...allFeedbackRequests.slice(1, allFeedbackRequests.length - 1),
@@ -113,7 +104,7 @@ function runFeedbackRound (teamName: string) {
     const personalSpreadsheet = SpreadsheetApp.openById(psid)
     const personalResultsSheet = personalSpreadsheet.getSheetByName(Constants.DEFAULT_RESULTS_SHEET)
     const newSheetRequired = personalResultsSheet.getLastRow() > 1
-    const numberOfRounds = personalSpreadsheet.getSheets().filter(sheet => sheet.getName() !== Constants.DEFAULT_SHEET).length
+    const numberOfRounds = personalSpreadsheet.getSheets().filter(Util.isNotDefaultSheet).length
     if(newSheetRequired) {
       personalSpreadsheet.insertSheet(`Form Responses ${numberOfRounds + 1}`, {template: personalResultsSheet})
     }
@@ -131,16 +122,12 @@ function runFeedbackRound (teamName: string) {
 function removePerson({ firstName, lastName, teamName }): object {
   const folder = getOrCreateWorkingFolder()
   const teamSheet = getOrCreateTeamSpreadsheet(folder).getSheetByName(teamName)
-  const rowIndex = getPersonsIndex(teamSheet, firstName, lastName)
+  const rowIndex = Util.getPersonsIndex(teamSheet, firstName, lastName)
   const { 0: docIds } = teamSheet.getRange(rowIndex, 4, 1, 4).getValues()
   docIds.forEach(id => folder.removeFile(DriveApp.getFileById(id)))
   teamSheet.deleteRow(rowIndex)
   return getTeams()
 }
-
-const errorPayload = (errorMessage: string): object => ({
-  error: errorMessage
-})
 
 function getFeedbackData (name: string) {
   try {
@@ -148,12 +135,16 @@ function getFeedbackData (name: string) {
     const folder = getOrCreateWorkingFolder()
     const { 0: teamSheet } = getOrCreateTeamSpreadsheet(folder)
       .getSheets()
-      .filter(sheet => getPersonsIndex(sheet, firstName, lastName) > 0)
+      .filter(sheet => Util.getPersonsIndex(sheet, firstName, lastName) > 0)
     const { 5: psid, 6: tsid } = teamSheet
       .getDataRange()
-      .getValues()[getPersonsIndex(teamSheet, firstName, lastName) - 1]
+      .getValues()[Util.getPersonsIndex(teamSheet, firstName, lastName) - 1]
     return Results.createPayload(psid, tsid, name)
   } catch (error) {
-    return errorPayload(`Could not find any data for ${name}. Ensure you have entered the name in the format: Firstname Lastname`)
+    return Util.errorPayload(`
+                             Could not find any data for ${name}.  Ensure you
+                             have entered the name in the format: Firstname
+                             Lastname
+                             `)
   }
 }
