@@ -3,12 +3,6 @@ import { Util } from './Util'
 
 export namespace Results {
 
-  const VALUE_MAPPING: { [s: string]: number }  = {
-    "Are smashing it": 3,
-    "Are spot on": 2,
-    "Have room to do more": 1
-  }
-
   const sheetData = (sheet: GoogleAppsScript.Spreadsheet.Sheet): string[][] =>
   sheet
     .getRange(2, 1, sheet.getLastRow(), sheet.getLastColumn())
@@ -18,8 +12,11 @@ export namespace Results {
     data.map(datum =>
       datum.slice(3, -2))
 
+  const chartRange = [0, Math.max(...Object.keys(Constants.VALUE_MAPPING)
+                              .map(e => Constants.VALUE_MAPPING[e]))]
+
   const valueToNumeric = (data: string[][]): number[][]=>
-    data.map(datum => datum.map(item => VALUE_MAPPING[item]))
+    data.map(datum => datum.map(item => Constants.VALUE_MAPPING[item]))
 
   const dataToChartValues = (data: number[], headers: string[]) =>
   data.map((n, i) =>
@@ -69,6 +66,7 @@ export namespace Results {
           values: teamChartValues
         },
         name: name,
+        range: chartRange,
         sustain: [...personSustains, ...teamSustains],
         improve: [...personImprovements, ...teamImprovements]
       }
