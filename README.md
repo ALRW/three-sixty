@@ -88,3 +88,39 @@ Once the script has opened, navigate to `Publish` > `Deploy as web app` and
 copy the url for the currently deployed version of your application. In a new
 tab navigate to this url and you should see the current running version of your
 360° feedback tool.
+
+### Making this tool your own
+
+This tool intentionally provides the bare minimum to get you started running
+360° feedback for your team with an opinionated set of feedback forms. As such
+if you are happy with the choices I have made you can go right ahead and not
+worry about a thing. However, if you would like to tweak things a little then I
+have made certain changes relatively easy to make.
+
+The feedback forms consist of a `Head` -> `Body` -> `Tail`
+
+In most cases it will be the body of the form that will require some changing.
+Questions in this section are composed of questions requiring an answer on a
+scale that defaults to the following:
+```javascript
+// namespaces/Constants.ts
+const VALUE_MAPPING: { [s: string]: number }  = {
+  "Are smashing it": 3,
+  "Are spot on": 2,
+  "Have room to do more": 1
+}
+```
+If you wish to change the scale, i.e. to increase the number of options or their
+descriptors simply update this constant.
+
+> :warning: This must be done when first initialising the application. Once you
+> have pushed the application to the app script console all applications will
+> use the constant you have defined. Trying to update the const after you have
+> been using this tool will cause bad things
+
+Similarly to update the actual questions in the Body of the form head over to
+`namespaces/Form.ts` where you can see programmatic representations of feedback
+forms for engineers, scrum masters and product owners. The body questions are
+generated from a matrix of tuples `[Question/Heading, Helper Text]`. These can
+be added deleted and/or updated at will.
+
