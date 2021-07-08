@@ -1,3 +1,5 @@
+import { Constants } from './Constants'
+
 export namespace Form {
 
   const createMultipleChoiceGrid = (form, question, helpText) =>
@@ -5,7 +7,7 @@ export namespace Form {
       .setTitle(question)
       .setHelpText(helpText)
       .setRows(['You...'])
-      .setColumns(['Have room to do more', 'Are spot on', 'Are smashing it'])
+      .setColumns(Object.keys(Constants.VALUE_MAPPING))
       .setRequired(true)
 
   const createFormHead = (form, title) => {

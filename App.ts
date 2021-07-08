@@ -1,75 +1,69 @@
-function doGet() {
+//testing whether imports affects the app script flow
+import { Constants } from './namespaces/Constants'
+import { Form } from './namespaces/Form'
+import { Email } from './namespaces/Email'
+import { Results } from './namespaces/Results'
+import { Util } from './namespaces/Util'
+
+function doGet(): GoogleAppsScript.HTML.HtmlOutput {
   return HtmlService.createTemplateFromFile('index').evaluate()
 }
 
-function include(filename: string) {
+function include(filename: string): string {
   return HtmlService.createHtmlOutputFromFile(filename).getContent()
 }
 
-function getOrCreateWorkingFolder() {
+function getOrCreateWorkingFolder(): GoogleAppsScript.Drive.Folder {
   const folders = DriveApp.getFoldersByName(Constants.FOLDER)
   return folders.hasNext() ? folders.next() : DriveApp.createFolder(Constants.FOLDER)
 }
 
-function addFileToWorkingFolder (folder, file) {
-  const temp = DriveApp.getFileById(file.getId())
+function addFileToWorkingFolder (
+  folder: GoogleAppsScript.Drive.Folder,
+  fileId: string): GoogleAppsScript.Drive.Folder {
+  const temp = DriveApp.getFileById(fileId)
   folder.addFile(temp)
   DriveApp.getRootFolder().removeFile(temp)
-  return file
+  return folder
 }
 
-function getOrCreateTeamSpreadsheet(folder) {
+function getOrCreateTeamSpreadsheet(
+  folder: GoogleAppsScript.Drive.Folder = getOrCreateWorkingFolder()
+) {
   const files = folder.getFilesByName(Constants.TEAM_SHEET)
-  if (files.hasNext()) {
-    return SpreadsheetApp.open(files.next())
-  }
+  if (files.hasNext()) return SpreadsheetApp.open(files.next())
   const ss = SpreadsheetApp.create(Constants.TEAM_SHEET)
-  return addFileToWorkingFolder(folder, ss)
+  addFileToWorkingFolder(folder, ss.getId())
+  return ss
 }
 
-function matrixToViewModel(sheet) {
-  return {
-    teamName: sheet.getName(),
-    members: sheet.getDataRange().getValues().map((row: string[]) => ({
-      firstName: row[0],
-      lastName: row[1],
-      role: row[7],
-      email: row[2]
-    }))
-  }
-}
-
-function getPersonsIndex(sheet, firstName, lastName) {
-  return sheet.getDataRange()
-    .getValues()
-    .map(row => row.slice(0, 2).join('').toLowerCase())
-    .indexOf(`${firstName}${lastName}`.toLowerCase()) + 1
-}
-
-function getTeams () {
-  return getOrCreateTeamSpreadsheet(getOrCreateWorkingFolder())
+function getTeams (
+  teamSpreadSheet: GoogleAppsScript.Spreadsheet.Spreadsheet = getOrCreateTeamSpreadsheet()
+): object {
+  return teamSpreadSheet
     .getSheets()
-    .filter(sheet => sheet.getName() !==  Constants.DEFAULT_SHEET)
-    .map(sheet => matrixToViewModel(sheet))
+    .filter(Util.isNotDefaultSheet)
+    .map(Util.matrixToViewModel)
 }
 
 function addTeam(teamName: string): object {
   const sanitisedName = teamName.replace(' ', '-')
-  const teamSpreadSheet = getOrCreateTeamSpreadsheet(getOrCreateWorkingFolder())
+  const teamSpreadSheet = getOrCreateTeamSpreadsheet()
   teamSpreadSheet.insertSheet(sanitisedName)
-  return getTeams()
+  return getTeams(teamSpreadSheet)
 }
 
 function removeTeam(teamName: string): object {
-  const teamSpreadSheet = getOrCreateTeamSpreadsheet(getOrCreateWorkingFolder())
+  const teamSpreadSheet = getOrCreateTeamSpreadsheet()
   teamSpreadSheet.deleteSheet(teamSpreadSheet.getSheetByName(teamName))
-  return getTeams()
+  return getTeams(teamSpreadSheet)
 }
 
 function addPerson({ firstName, lastName, email, role, team }): object {
   const lock = LockService.getScriptLock()
   lock.tryLock(15000)
   const folder = getOrCreateWorkingFolder()
+  const teamSpreadSheet = getOrCreateTeamSpreadsheet(folder)
   const forms = [
     Form.createFeedbackForm(`${firstName} ${lastName}'s Feedback`, true, role),
     Form.createFeedbackForm(`${firstName} ${lastName}'s Team Feedback`, false, role),
@@ -82,29 +76,26 @@ function addPerson({ firstName, lastName, email, role, team }): object {
   const [pfid, tfid, psid, tsid] = [...forms, ...spreadsheets].map(f => f.getId())
   personalForm.setDestination(FormApp.DestinationType.SPREADSHEET, psid)
   teamForm.setDestination(FormApp.DestinationType.SPREADSHEET, tsid)
-  forms.forEach(file => addFileToWorkingFolder(folder, file))
-  spreadsheets.forEach(file => addFileToWorkingFolder(folder, file))
-  getOrCreateTeamSpreadsheet(folder)
-    .getSheetByName(team)
-    .appendRow([firstName, lastName, email, pfid, tfid, psid, tsid, role])
+  forms.forEach(file => addFileToWorkingFolder(folder, file.getId()))
+  spreadsheets.forEach(file => addFileToWorkingFolder(folder, file.getId()))
+  teamSpreadSheet.getSheetByName(team).appendRow(
+    [firstName, lastName, email, pfid, tfid, psid, tsid, role]
+  )
   Utilities.sleep(15000)
   lock.releaseLock()
-  return getTeams()
+  return getTeams(teamSpreadSheet)
 }
 
-function multiplyArray(arr, times){
-  return times ? arr.concat(multiplyArray(arr, times - 1)) : []
-}
-
-function runFeedbackRound (teamName: string) {
+function runFeedbackRound (teamName: string): string {
   const folder = getOrCreateWorkingFolder()
   const teamSheet = getOrCreateTeamSpreadsheet(folder).getSheetByName(teamName)
   const team = teamSheet.getDataRange().getValues()
   
+  // FIXME find better algorithm for this as it doesn't work
   // if there are more than chunkSize number of people limit the number of forms
   // each person receives
   const chunkSize = team.length > 4 ? 4 : team.length - 1
-  const allFeedbackRequests = multiplyArray(team, chunkSize)
+  const allFeedbackRequests = Util.multiplyArray(team, chunkSize)
   const rotatedPeers = [
     allFeedbackRequests[allFeedbackRequests.length - 1],
     ...allFeedbackRequests.slice(1, allFeedbackRequests.length - 1),
@@ -115,12 +106,11 @@ function runFeedbackRound (teamName: string) {
     const endIndex = startIndex + chunkSize
     return [...person, rotatedPeers.slice(startIndex, endIndex)]
   })
-
   teamWithPeers.forEach(([firstName, lastName, email, pfid, tfid, psid, tsid, role, peers], i, original) => {
     const personalSpreadsheet = SpreadsheetApp.openById(psid)
     const personalResultsSheet = personalSpreadsheet.getSheetByName(Constants.DEFAULT_RESULTS_SHEET)
     const newSheetRequired = personalResultsSheet.getLastRow() > 1
-    const numberOfRounds = personalSpreadsheet.getSheets().filter(sheet => sheet.getName() !== Constants.DEFAULT_SHEET).length
+    const numberOfRounds = personalSpreadsheet.getSheets().filter(Util.isNotDefaultSheet).length
     if(newSheetRequired) {
       personalSpreadsheet.insertSheet(`Form Responses ${numberOfRounds + 1}`, {template: personalResultsSheet})
     }
@@ -137,30 +127,30 @@ function runFeedbackRound (teamName: string) {
 
 function removePerson({ firstName, lastName, teamName }): object {
   const folder = getOrCreateWorkingFolder()
-  const teamSheet = getOrCreateTeamSpreadsheet(folder).getSheetByName(teamName)
-  const rowIndex = getPersonsIndex(teamSheet, firstName, lastName)
+  const teamSpreadSheet = getOrCreateTeamSpreadsheet(folder)
+  const teamSheet = teamSpreadSheet.getSheetByName(teamName)
+  const rowIndex = Util.getPersonsIndex(teamSheet, firstName, lastName)
   const { 0: docIds } = teamSheet.getRange(rowIndex, 4, 1, 4).getValues()
   docIds.forEach(id => folder.removeFile(DriveApp.getFileById(id)))
   teamSheet.deleteRow(rowIndex)
-  return getTeams()
+  return getTeams(teamSpreadSheet)
 }
 
-const errorPayload = (errorMessage: string): object => ({
-  error: errorMessage
-})
-
-function getFeedbackData (name: string) {
+function getFeedbackData (name: string): object {
   try {
     const { 0: firstName, 1: lastName } = name.split(' ')
-    const folder = getOrCreateWorkingFolder()
-    const { 0: teamSheet } = getOrCreateTeamSpreadsheet(folder)
+    const { 0: teamSheet } = getOrCreateTeamSpreadsheet()
       .getSheets()
-      .filter(sheet => getPersonsIndex(sheet, firstName, lastName) > 0)
+      .filter(sheet => Util.getPersonsIndex(sheet, firstName, lastName) > 0)
     const { 5: psid, 6: tsid } = teamSheet
       .getDataRange()
-      .getValues()[getPersonsIndex(teamSheet, firstName, lastName) - 1]
+      .getValues()[Util.getPersonsIndex(teamSheet, firstName, lastName) - 1]
     return Results.createPayload(psid, tsid, name)
   } catch (error) {
-    return errorPayload(`Could not find any data for ${name}. Ensure you have entered the name in the format: Firstname Lastname`)
+    return Util.errorPayload(`
+                             Could not find any data for ${name}.  Ensure you
+                             have entered the name in the format: Firstname
+                             Lastname
+                             `)
   }
 }

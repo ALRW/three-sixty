@@ -1,12 +1,9 @@
+import { Constants } from './Constants'
+import { Util } from './Util'
+
 export namespace Results {
 
-  const VALUE_MAPPING: { [s: string]: number }  = {
-    "Are smashing it": 3,
-    "Are spot on": 2,
-    "Have room to do more": 1
-  }
-
-  const sheetData = (sheet): string[][] =>
+  const sheetData = (sheet: GoogleAppsScript.Spreadsheet.Sheet): string[][] =>
   sheet
     .getRange(2, 1, sheet.getLastRow(), sheet.getLastColumn())
     .getValues()
@@ -15,8 +12,11 @@ export namespace Results {
     data.map(datum =>
       datum.slice(3, -2))
 
+  const chartRange = [0, Math.max(...Object.keys(Constants.VALUE_MAPPING)
+                              .map(e => Constants.VALUE_MAPPING[e]))]
+
   const valueToNumeric = (data: string[][]): number[][]=>
-    data.map(datum => datum.map(item => VALUE_MAPPING[item]))
+    data.map(datum => datum.map(item => Constants.VALUE_MAPPING[item]))
 
   const dataToChartValues = (data: number[], headers: string[]) =>
   data.map((n, i) =>
@@ -30,7 +30,7 @@ export namespace Results {
   data.reduce((res, datum) =>
     [...res, ...datum.slice(-1)], [])
 
-  const numericMatrixToAverage = (data) => {
+  const numericMatrixToAverage = (data: number[][]) => {
     const sum = data.slice(1).reduce((res, datum) =>
       datum.map((n, i) =>
         n + res[i]
@@ -66,6 +66,7 @@ export namespace Results {
           values: teamChartValues
         },
         name: name,
+        range: chartRange,
         sustain: [...personSustains, ...teamSustains],
         improve: [...personImprovements, ...teamImprovements]
       }
@@ -78,7 +79,7 @@ export namespace Results {
     const { 0: sheetHeaders } = firstSheet.getRange(1, 1, 1, firstSheet.getMaxColumns()).getValues()
     const cleanHeaders = sheetHeaders.filter(Boolean)
       .slice(3, -2)
-      .map(header => header.substring(0, header.indexOf('[')))
+      .map((header: string) => header.substring(0, header.indexOf('[')))
     return cleanHeaders
   }
 
@@ -89,9 +90,8 @@ export namespace Results {
   ) {
     const personalSpreadsheet = SpreadsheetApp.openById(personalSpreadsheetId)
     const teamSpreadsheet = SpreadsheetApp.openById(teamSpreadsheetId)
-    const isNotDefaultSheet = sheet => sheet.getName() !== Constants.DEFAULT_SHEET
-    const personalSheets = personalSpreadsheet.getSheets().filter(isNotDefaultSheet)
-    const teamSheets = teamSpreadsheet.getSheets().filter(isNotDefaultSheet)
+    const personalSheets = personalSpreadsheet.getSheets().filter(Util.isNotDefaultSheet)
+    const teamSheets = teamSpreadsheet.getSheets().filter(Util.isNotDefaultSheet)
     const headers = getHeaders(personalSheets)
     const getRowsPerRound = sheet => sheet.getLastRow() - 1
     const rowsPerRoundPersonal = personalSheets.map(getRowsPerRound).reverse()

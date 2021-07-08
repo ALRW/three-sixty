@@ -5,7 +5,10 @@ export namespace Constants {
   export const DEFAULT_RESULTS_SHEET = 'Form Responses 1'
   export const PRODUCT_MANAGER = 'Product Manager'
   export const SCRUM_MASTER = 'Scrum Master'
-  export function add(a,b){
-    return a + b
+  export const VALUE_MAPPING: { [s: string]: number }  = {
+    "Are smashing it": 3,
+    "Are spot on": 2,
+    "Have room to do more": 1
   }
 }
+
